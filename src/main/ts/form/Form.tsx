@@ -1,6 +1,6 @@
 import React from "react";
-import {User} from "../db/models/User";
 import axios, {AxiosResponse} from "axios";
+import {User} from "./instances/User";
 
 export interface FormPropsInterface {
 
@@ -56,16 +56,20 @@ export default class Form extends React.Component<FormPropsInterface, FormStateI
     };
 
     addUser = (event: React.FormEvent<HTMLFormElement>) => {
-        axios.post("/api/create", {
-            username: this.state.username,
-            password: this.state.password
-        })
+        const user = new User(
+            this.state.username,
+            this.state.password
+        );
+        axios.post("/api/create", user)
             .then((res: AxiosResponse) => {
                 this.setState({
                     responseText: res.statusText
                 })
             })
             .catch((err: Error) => {
+                this.setState({
+                    responseText: err.message
+                });
                 throw err;
             });
         event.preventDefault();

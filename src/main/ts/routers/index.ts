@@ -18,6 +18,7 @@ router.get("/data", (req: Request, res: Response) => {
 });
 
 router.post("/create", (req: Request, res: Response) => {
+    console.log(req.body);
     db.createEntry(User, req.body)
         .then((data: UserInstance) => {
             return res.status(201).send(data);

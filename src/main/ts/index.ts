@@ -28,20 +28,3 @@ class Server {
 
 const server = new Server();
 server.start();
-
-
-/*const db = new DataBase();
-const check = db.checkConnection();
-check
-    .then(() => {
-        console.log("DB CONNECTION SUCCESS");
-        const User = UserModel(db.sequelize);
-        User.findAll()
-            .then((users: Array<UserInstance>) => {
-                console.log("success " + users[0].password)
-            })
-
-    })
-    .catch((error: Error) => {
-        throw error
-    });*/

@@ -60,15 +60,20 @@ export class DataBase implements DataBaseInterface {
     createEntry<T, R>(model: Sequelize.Model<T, R>, instance: R): Promise<T> {
         // @ts-ignore
         return new Promise<T>((resolve: Function, reject: Function) => {
-            this.sequelize.transaction((t: Transaction) => {
-                return model.create(instance)
-                    .then((res: T) => {
-                        resolve(res);
-                    })
-                    .catch((error: Error) => {
-                        reject(error);
-                    });
-            });
+            if (instance) {
+
+                this.sequelize.transaction((t: Transaction) => {
+                    return model.create(instance)
+                        .then((res: T) => {
+                            resolve(res);
+                        })
+                        .catch((error: Error) => {
+                            reject(error);
+                        });
+                });
+            } else {
+                reject(new Error("Empty Entry"));
+            }
         });
     }
 
