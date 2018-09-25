@@ -1,6 +1,6 @@
 import React from "react";
 import {User} from "../db/models/User";
-import {throws} from "assert";
+import axios, {AxiosResponse} from "axios";
 
 export interface FormPropsInterface {
 
@@ -8,13 +8,19 @@ export interface FormPropsInterface {
 
 export interface FormStateInterface {
     data: Array<User> | null
+    username: string;
+    password: string;
+    responseText: string;
 }
 
 export default class Form extends React.Component<FormPropsInterface, FormStateInterface> {
     constructor(props: FormStateInterface) {
         super(props);
         this.state = {
-            data: null
+            data: null,
+            username: "",
+            password: "",
+            responseText: ""
         }
     }
 
@@ -24,7 +30,8 @@ export default class Form extends React.Component<FormPropsInterface, FormStateI
                 res.json()
                     .then((data: Array<User>) => {
                         this.setState({
-                            data: data
+                            data: data,
+                            responseText: ""
                         })
                     })
                     .catch(reason => {
@@ -36,20 +43,72 @@ export default class Form extends React.Component<FormPropsInterface, FormStateI
             })
     };
 
+    onChangeUsername = (event: React.FormEvent<HTMLInputElement>) => {
+        this.setState({
+            username: event.currentTarget.value
+        });
+    };
+
+    onChangePassword = (event: React.FormEvent<HTMLInputElement>) => {
+        this.setState({
+            password: event.currentTarget.value
+        });
+    };
+
+    addUser = (event: React.FormEvent<HTMLFormElement>) => {
+        axios.post("/api/create", {
+            username: this.state.username,
+            password: this.state.password
+        })
+            .then((res: AxiosResponse) => {
+                this.setState({
+                    responseText: res.statusText
+                })
+            })
+            .catch((err: Error) => {
+                throw err;
+            });
+        event.preventDefault();
+    };
+
     render() {
         return (
             <div>
                 DATABASE CONTAINS
                 <ol>
                     {this.state.data &&
-                    this.state.data.map((user: User) => {
+                    this.state.data.map((user: User, index: number) => {
                         return (
-                            <li>{user.username} : {user.password}</li>
+                            <li key={index}>{user.username} : {user.password}</li>
                         )
                     })
                     }
                 </ol>
                 <button onClick={this.getData}>Take records</button>
+                <fieldset>
+                    <legend>Add User</legend>
+                    <form onSubmit={this.addUser}>
+                        <label htmlFor="username">User name</label>
+                        <input
+                            type="text"
+                            name="username"
+                            id="username"
+                            value={this.state.username}
+                            onChange={this.onChangeUsername}
+                        />
+                        <label htmlFor="password">Password</label>
+                        <input
+                            type="password"
+                            name="password"
+                            id="password"
+                            value={this.state.password}
+                            onChange={this.onChangePassword}
+                        />
+                        <button type="submit">Send</button>
+                        <span>{this.state.responseText}</span>
+                    </form>
+                </fieldset>
+                <button onClick={this.getData}>Add record</button>
             </div>
         )
     }

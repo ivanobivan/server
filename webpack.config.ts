@@ -13,12 +13,12 @@ module.exports = {
     devServer: {
         hot: true,
         inline: true,
-        /*proxy: {
+        proxy: {
             '/api': {
-                target: 'http://0.0.0.0:3000', // 192.168.0.123
+                target: 'http://0.0.0.0:3000',
                 secure: false
             }
-        },*/
+        },
         watchOptions: {
             aggregateTimeout: 300,
             poll: 1000,

@@ -4,6 +4,7 @@ interface ConfigInterface {
 
 export class ServerConfig implements ConfigInterface {
     static PORT: number = 3000;
+    static HOST: string = "0.0.0.0";
 
 }
 

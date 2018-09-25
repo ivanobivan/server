@@ -2,10 +2,7 @@ import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 import express, {Express, Request, Response} from "express";
 import {ServerConfig} from "./config/config";
-import {DataBase} from "./db";
-import UserModel, {User, UserAttributes} from "./db/models/User"
-import Sequelize, {DataTypes} from "sequelize";
-
+import {router} from "./routers"
 
 class Server {
     private app: Express;
@@ -14,7 +11,7 @@ class Server {
         this.app = express();
         this.app.use(bodyParser.json());
         this.app.use(cookieParser());
-        //this.app.use("/api/data",);
+        this.app.use("/api", router);
         this.app.use((error: Error, req: Request, res: Response, next: Function) => {
             if (error) {
                 res.status(400).send(error);
@@ -23,27 +20,28 @@ class Server {
     }
 
     start(): void {
-        this.app.listen(ServerConfig.PORT, () => {
+        this.app.listen(ServerConfig.PORT, ServerConfig.HOST, () => {
             console.log(`listen ${ServerConfig.PORT}`)
         })
     };
 }
 
 const server = new Server();
-const db = new DataBase();
+server.start();
+
+
+/*const db = new DataBase();
 const check = db.checkConnection();
 check
     .then(() => {
         console.log("DB CONNECTION SUCCESS");
         const User = UserModel(db.sequelize);
         User.findAll()
-            .then((users: Array<UserAttributes>) => {
+            .then((users: Array<UserInstance>) => {
                 console.log("success " + users[0].password)
             })
 
     })
     .catch((error: Error) => {
         throw error
-    });
-
-server.start();
+    });*/

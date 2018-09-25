@@ -1,5 +1,6 @@
-import Sequelize from "sequelize";
+import Sequelize, {Transaction} from "sequelize";
 import {DBConfig} from "../config/config";
+import {object} from "prop-types";
 
 export interface DataBaseInterface {
     sequelize: Sequelize.Sequelize;
@@ -29,10 +30,6 @@ export class DataBase implements DataBaseInterface {
             });
     }
 
-    checkConnection(): Promise<void> {
-        return this.sequelize.authenticate();
-    }
-
     get sequelize(): Sequelize.Sequelize {
         return this._sequelize;
     }
@@ -40,4 +37,39 @@ export class DataBase implements DataBaseInterface {
     set sequelize(value: Sequelize.Sequelize) {
         this._sequelize = value;
     }
+
+    checkConnection(): Promise<void> {
+        return this.sequelize.authenticate();
+    }
+
+    getAllEntries<T, R>(model: Sequelize.Model<T, R>): Promise<Array<T>> {
+        // @ts-ignore
+        return new Promise<Array<T>>((resolve: Function, reject: Function) => {
+            this.sequelize.transaction((t: Transaction) => {
+                return model.findAll()
+                    .then((data: Array<T>) => {
+                        resolve(data);
+                    })
+                    .catch((error: Error) => {
+                        reject(error);
+                    });
+            });
+        });
+    }
+
+    createEntry<T, R>(model: Sequelize.Model<T, R>, instance: R): Promise<T> {
+        // @ts-ignore
+        return new Promise<T>((resolve: Function, reject: Function) => {
+            this.sequelize.transaction((t: Transaction) => {
+                return model.create(instance)
+                    .then((res: T) => {
+                        resolve(res);
+                    })
+                    .catch((error: Error) => {
+                        reject(error);
+                    });
+            });
+        });
+    }
+
 }

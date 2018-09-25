@@ -12,14 +12,14 @@ export interface UserInstance extends UserAttributes {
 }
 
 export class User implements UserAttributes {
-    private _password: string;
     private _username: string;
+    private _password: string;
 
-    constructor(password: string, username: string) {
-        this._password = password;
+
+    constructor(username: string, password: string) {
         this._username = username;
+        this._password = password;
     }
-
 
     get password(): string {
         return this._password;
