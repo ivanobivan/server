@@ -1,14 +1,17 @@
+import Sequelize from "sequelize";
 
 export interface UserAttributes {
-    username:string;
-    password:string;
+    username: string;
+    password: string;
 }
 
-export interface UserInstance{
-    id:number;
+export interface UserInstance extends UserAttributes {
+    id: number;
+    createdAt: Date;
+    updatedAt: Date;
 }
 
-export class User implements UserAttributes{
+export class User implements UserAttributes {
     private _password: string;
     private _username: string;
 
@@ -34,3 +37,11 @@ export class User implements UserAttributes{
         this._username = value;
     }
 }
+
+
+export default (sequelize: Sequelize.Sequelize):Sequelize.Model<UserInstance, UserAttributes> => {
+    return sequelize.define<UserInstance, UserAttributes>("User", {
+        username: Sequelize.STRING,
+        password: Sequelize.STRING
+    })
+};
