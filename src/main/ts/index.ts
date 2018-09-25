@@ -6,7 +6,7 @@ import express, {Express, Request, Response} from "express";
 import Sequelize from "sequelize";
 import {ServerConfig} from "./config/config";
 import {DataBase} from "./db/models";
-import {User} from "./db/models/User";
+import {User, UserAttributes, UserInstance} from "./db/models/User";
 
 class Server {
     private app: Express;
@@ -38,11 +38,36 @@ class Server {
 
 const server = new Server();
 const db = new DataBase();
-db.checkConnection();
-//db.addUser(new User("ivan","123"));
-//db.addUser(new User("ivan2","12345"));
+const check =  db.checkConnection();
+check
+    .then(() => {
+        db.model.sync()
+            .then(() => {
+                db.model.create({
+                    username: "ivan",
+                    password: "123"
+                })
+                    .then(()=> {
+                        db.model.findAll()
+                            .then((users:Array<UserInstance>)=>{
+                                // @ts-ignore
+                                console.log("SUCCESS " + users.length);
+                            })
+                            .catch((err:Error)=>{
+                                throw Error;
+                            })
+                    })
+                    .catch((err:Error)=>{
+                        throw err;
+                    })
 
-//console.log(db.getuserList());
+            .catch((err:Error) => {
+                throw err;
+            })
+    })
+    .catch((err:Error) => {
+       throw err;
+    });
 
 server.route();
 server.start();

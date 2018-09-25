@@ -6,7 +6,7 @@ import {User, UserAttributes, UserInstance} from "./User";
 export class DataBase {
 
     private _sequelize: Sequelize.Sequelize;
-    //private model: Model<UserInstance, UserAttributes>;
+    private _model: Sequelize.Model<UserInstance, UserAttributes>;
 
     constructor() {
         const config = new DBConfig("test");
@@ -27,7 +27,7 @@ export class DataBase {
             });
 
 
-        const User = this.sequelize.define('Test', {
+        this._model = this.sequelize.define('Test', {
             username: {
                 type: Sequelize.STRING
             },
@@ -35,45 +35,10 @@ export class DataBase {
                 type: Sequelize.STRING
             }
         });
-        User.sync({force: true}).then(() => {
-            return User.create({
-                username: 'ivan',
-                password: '123'
-            });
-        });
-        /*User.findAll().then(users => {
-            console.log(users)
-        })*/
-        User.findById(1).then(res => {
-            console.log(res)
-        })
     }
 
-   /* addUser(user: User): void {
-        this.model.sync({force: true}).then(() => {
-            return this.model.create({
-                username: user.username,
-                password: user.password
-            });
-        });
-    }*/
-
-    /*getuserList(): Array<UserInstance> | void {
-        this.model.findAll()
-            .then((users: Array<UserInstance>) => {
-                return users;
-            })
-    }*/
-
-    checkConnection(): void {
-        const auth: Promise<void> = this.sequelize.authenticate();
-        auth
-            .then(() => {
-                console.log("db success")
-            })
-            .catch((err) => {
-                throw err
-            })
+    checkConnection(): Promise<void> {
+        return this.sequelize.authenticate();
     }
 
     get sequelize(): Sequelize.Sequelize {
@@ -84,4 +49,11 @@ export class DataBase {
         this._sequelize = value;
     }
 
+    get model(): Sequelize.Model<UserInstance, UserAttributes> {
+        return this._model;
+    }
+
+    set model(value: Sequelize.Model<UserInstance, UserAttributes>) {
+        this._model = value;
+    }
 }
