@@ -76,7 +76,7 @@ export class DataBase implements DataBaseInterface {
     createEntry<T, R>(model: Sequelize.Model<T, R>, instance: R): Promise<T> {
         return new Promise<T>((resolve: Function, reject: Function) => {
             if (instance) {
-
+                console.log(instance);
                 this.sequelize.transaction((t: Transaction) => {
                     return model.create(instance)
                         .then((res: T) => {

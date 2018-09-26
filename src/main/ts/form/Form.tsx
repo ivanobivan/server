@@ -56,16 +56,31 @@ export default class Form extends React.Component<FormPropsInterface, FormStateI
     };
 
     addUser = (event: React.FormEvent<HTMLFormElement>) => {
-        axios.post("/api/create",
-            new User(
-                this.state.username,
-                this.state.password
-            )
+        fetch("/api/create", {
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                method: "POST",
+                body: JSON.stringify(new User(
+                    this.state.username,
+                    this.state.password
+                ))
+            }
         )
-            .then((res: AxiosResponse) => {
-                this.setState({
-                    responseText: res.statusText
-                })
+            .then((res) => {
+                res.json()
+                    .then((data) => {
+                        console.log(data);
+                        this.setState({
+                            responseText: res.statusText
+                        })
+                    })
+                    .catch(err => {
+                        this.setState({
+                            responseText: err.message
+                        });
+                    })
             })
             .catch((err: Error) => {
                 this.setState({
@@ -75,6 +90,7 @@ export default class Form extends React.Component<FormPropsInterface, FormStateI
             });
         event.preventDefault();
     };
+
 
     render() {
         return (
