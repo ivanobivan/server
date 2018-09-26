@@ -24,23 +24,13 @@ export default class Form extends React.Component<FormPropsInterface, FormStateI
         }
     }
 
-    getData = (): void => {
-        fetch("/api/data")
-            .then((res) => {
-                res.json()
-                    .then((data: Array<User>) => {
-                        this.setState({
-                            data: data,
-                            responseText: ""
-                        })
-                    })
-                    .catch(reason => {
-                        throw reason
-                    })
-            })
-            .catch((err: Error) => {
-                throw err;
-            })
+    getData = async () => {
+        const res = await fetch("/api/data");
+        const data: Array<User> = await res.json();
+        this.setState({
+            data: data,
+            responseText: ""
+        })
     };
 
     onChangeUsername = (event: React.FormEvent<HTMLInputElement>) => {
@@ -55,8 +45,10 @@ export default class Form extends React.Component<FormPropsInterface, FormStateI
         });
     };
 
-    addUser = (event: React.FormEvent<HTMLFormElement>) => {
-        fetch("/api/create", {
+
+    addUser = async (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        const res = await fetch("/api/create", {
                 headers: {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
@@ -67,28 +59,10 @@ export default class Form extends React.Component<FormPropsInterface, FormStateI
                     this.state.password
                 ))
             }
-        )
-            .then((res) => {
-                res.json()
-                    .then((data) => {
-                        console.log(data);
-                        this.setState({
-                            responseText: res.statusText
-                        })
-                    })
-                    .catch(err => {
-                        this.setState({
-                            responseText: err.message
-                        });
-                    })
-            })
-            .catch((err: Error) => {
-                this.setState({
-                    responseText: err.message
-                });
-                throw err;
-            });
-        event.preventDefault();
+        );
+        this.setState({
+            responseText: res.statusText
+        })
     };
 
 
@@ -129,7 +103,6 @@ export default class Form extends React.Component<FormPropsInterface, FormStateI
                         <span>{this.state.responseText}</span>
                     </form>
                 </fieldset>
-                <button onClick={this.getData}>Add record</button>
             </div>
         )
     }
