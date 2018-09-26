@@ -1,5 +1,4 @@
 import React from "react";
-import axios, {AxiosResponse} from "axios";
 import {User} from "./instances/User";
 
 export interface FormPropsInterface {
@@ -7,9 +6,11 @@ export interface FormPropsInterface {
 }
 
 export interface FormStateInterface {
-    data: Array<User> | null
+    data: Array<User> | null;
+    current: User | null;
     username: string;
     password: string;
+    uuid: string;
     responseText: string;
 }
 
@@ -18,19 +19,26 @@ export default class Form extends React.Component<FormPropsInterface, FormStateI
         super(props);
         this.state = {
             data: null,
+            current: null,
             username: "",
             password: "",
+            uuid: "",
             responseText: ""
         }
     }
 
-    getData = async () => {
-        const res = await fetch("/api/data");
-        const data: Array<User> = await res.json();
-        this.setState({
-            data: data,
-            responseText: ""
-        })
+    getData = async (): Promise<void> => {
+        try {
+            const res = await fetch("/api/getAll");
+            const data: Array<User> = await res.json();
+            this.setState({
+                data: data,
+                responseText: ""
+            })
+        } catch (e) {
+            throw e;
+        }
+
     };
 
     onChangeUsername = (event: React.FormEvent<HTMLInputElement>) => {
@@ -45,26 +53,59 @@ export default class Form extends React.Component<FormPropsInterface, FormStateI
         });
     };
 
-
-    addUser = async (event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-        const res = await fetch("/api/create", {
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                method: "POST",
-                body: JSON.stringify(new User(
-                    this.state.username,
-                    this.state.password
-                ))
-            }
-        );
+    onChangeUuid = (event: React.FormEvent<HTMLInputElement>) => {
         this.setState({
-            responseText: res.statusText
-        })
+            uuid: event.currentTarget.value
+        });
     };
 
+    addUser = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
+        event.preventDefault();
+        try {
+            const res = await fetch("/api/create", {
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    method: "POST",
+                    body: JSON.stringify(new User(
+                        this.state.username,
+                        this.state.password
+                    ))
+                }
+            );
+            this.setState({
+                responseText: res.statusText
+            })
+        } catch (e) {
+            //todo Error handler component
+            throw e;
+        }
+
+    };
+
+    getUser = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
+        event.preventDefault();
+        try {
+            const res = await fetch("/api/get", {
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    method: "POST",
+                    body: JSON.stringify({
+                        uuid: this.state.uuid.trim()
+                    })
+                }
+            );
+            const user: User = await res.json();
+            this.setState({
+                current: user
+            })
+        } catch (e) {
+            throw e;
+        }
+    };
 
     render() {
         return (
@@ -74,11 +115,19 @@ export default class Form extends React.Component<FormPropsInterface, FormStateI
                     {this.state.data &&
                     this.state.data.map((user: User, index: number) => {
                         return (
-                            <li key={index}>{user.username} : {user.password}</li>
+                            <li key={index}>{user.username} : {user.password} : {user.uuid}</li>
                         )
                     })
                     }
                 </ol>
+                CURRENT
+                {this.state.current &&
+                <div>
+                    NAME: {this.state.current.username}
+                    PASSWORD: {this.state.current.password}
+                    UUID: {this.state.current.uuid}
+                </div>
+                }
                 <button onClick={this.getData}>Take records</button>
                 <fieldset>
                     <legend>Add User</legend>
@@ -103,6 +152,22 @@ export default class Form extends React.Component<FormPropsInterface, FormStateI
                         <span>{this.state.responseText}</span>
                     </form>
                 </fieldset>
+
+                <fieldset>
+                    <legend>Get User</legend>
+                    <form onSubmit={this.getUser}>
+                        <label htmlFor="uuid">Password</label>
+                        <input
+                            type="text"
+                            name="uuid"
+                            id="uuid"
+                            value={this.state.uuid}
+                            onChange={this.onChangeUuid}
+                        />
+                        <button type="submit">Get</button>
+                    </form>
+                </fieldset>
+
             </div>
         )
     }

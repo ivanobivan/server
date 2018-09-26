@@ -8,7 +8,7 @@ const db = new DataBase();
 const User = UserModel(db.sequelize);
 db.syncModel(User);
 
-router.get("/data", (req: Request, res: Response) => {
+router.get("/getAll", (req: Request, res: Response) => {
     db.getAllEntries(User)
         .then((data: Array<UserInstance>) => {
             return res.status(201).send(data);
@@ -19,12 +19,23 @@ router.get("/data", (req: Request, res: Response) => {
 });
 
 router.post("/create", (req: Request, res: Response) => {
-    console.log(req.body);
     db.createEntry(User, req.body)
         .then((data: UserInstance) => {
             return res.status(201).send(data);
         })
         .catch((error: Error) => {
+            return res.status(409).send(error);
+        });
+});
+
+router.post("/get", (req: Request, res: Response) => {
+    //todo need think about replace body.uuid
+    db.getEntry(req.body.uuid, User)
+        .then((data: UserInstance) => {
+            return res.status(201).send(data);
+        })
+        .catch((error: Error) => {
+            //todo incorrect error code 409 (Server Conflict)
             return res.status(409).send(error);
         });
 });

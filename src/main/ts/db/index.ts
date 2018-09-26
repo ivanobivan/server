@@ -76,7 +76,6 @@ export class DataBase implements DataBaseInterface {
     createEntry<T, R>(model: Sequelize.Model<T, R>, instance: R): Promise<T> {
         return new Promise<T>((resolve: Function, reject: Function) => {
             if (instance) {
-                console.log(instance);
                 this.sequelize.transaction((t: Transaction) => {
                     return model.create(instance)
                         .then((res: T) => {
@@ -89,6 +88,21 @@ export class DataBase implements DataBaseInterface {
             } else {
                 reject(new Error("Empty Entry"));
             }
+        });
+    }
+
+    getEntry<T, R>(uuid: string, model: Sequelize.Model<T, R>): Promise<T> {
+        return new Promise<T>((resolve: Function, reject: Function) => {
+            this.sequelize.transaction((t: Transaction) => {
+                return model.findByPrimary(uuid)
+                    .then((entry: T | null) => {
+                        console.log(entry);
+                        resolve(entry);
+                    })
+                    .catch((error: Error) => {
+                        reject(error);
+                    });
+            });
         });
     }
 

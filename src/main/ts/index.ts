@@ -3,6 +3,8 @@ import cookieParser from "cookie-parser";
 import express, {Express, Request, Response} from "express";
 import {ServerConfig} from "./config/config";
 import {router} from "./routers"
+import passport, {PassportStatic} from "passport";
+import {UserInstance} from "./db/models/User";
 
 class Server {
     private app: Express;
@@ -17,6 +19,12 @@ class Server {
                 res.status(400).send(error);
             }
         });
+        passport.serializeUser((user: UserInstance, done: Function) => {
+            done(null, user.id);
+        });
+        passport.deserializeUser(async (id: number, done: Function) => {
+
+        })
     }
 
     start(): void {
