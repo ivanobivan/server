@@ -4,12 +4,12 @@ import UserModel, {UserInstance} from "../db/models/User";
 
 export const router = Router();
 
-const db = new DataBase();
-const User = UserModel(db.sequelize);
-db.syncModel(User);
+export const db = new DataBase();
+export const UserModelInstance = UserModel(db.sequelize);
+db.syncModel(UserModelInstance);
 
 router.get("/getAll", (req: Request, res: Response) => {
-    db.getAllEntries(User)
+    db.getAllEntries(UserModelInstance)
         .then((data: Array<UserInstance>) => {
             return res.status(201).send(data);
         })
@@ -19,7 +19,7 @@ router.get("/getAll", (req: Request, res: Response) => {
 });
 
 router.post("/create", (req: Request, res: Response) => {
-    db.createEntry(User, req.body)
+    db.createEntry(UserModelInstance, req.body)
         .then((data: UserInstance) => {
             return res.status(201).send(data);
         })
@@ -30,7 +30,7 @@ router.post("/create", (req: Request, res: Response) => {
 
 router.post("/get", (req: Request, res: Response) => {
     //todo need think about replace body.uuid
-    db.getEntry(req.body.uuid, User)
+    db.getEntry(req.body.uuid, UserModelInstance)
         .then((data: UserInstance) => {
             return res.status(201).send(data);
         })
