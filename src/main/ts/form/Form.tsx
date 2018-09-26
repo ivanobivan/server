@@ -122,11 +122,11 @@ export default class Form extends React.Component<FormPropsInterface, FormStateI
                 </ol>
                 CURRENT
                 {this.state.current &&
-                <div>
-                    NAME: {this.state.current.username}
-                    PASSWORD: {this.state.current.password}
-                    UUID: {this.state.current.uuid}
-                </div>
+                <ul>
+                    <li>NAME: {this.state.current.username}</li>
+                    <li>PASSWORD: {this.state.current.password}</li>
+                    <li>UUID: {this.state.current.uuid}</li>
+                </ul>
                 }
                 <button onClick={this.getData}>Take records</button>
                 <fieldset>

@@ -14,7 +14,7 @@ router.get("/getAll", (req: Request, res: Response) => {
             return res.status(201).send(data);
         })
         .catch((error: Error) => {
-            return res.status(409).send(error);
+            return res.sendStatus(400).send(error);
         });
 });
 
@@ -24,7 +24,7 @@ router.post("/create", (req: Request, res: Response) => {
             return res.status(201).send(data);
         })
         .catch((error: Error) => {
-            return res.status(409).send(error);
+            return res.sendStatus(400).send(error);
         });
 });
 
@@ -36,6 +36,6 @@ router.post("/get", (req: Request, res: Response) => {
         })
         .catch((error: Error) => {
             //todo incorrect error code 409 (Server Conflict)
-            return res.status(409).send(error);
+            return res.sendStatus(400).send(error);
         });
 });
