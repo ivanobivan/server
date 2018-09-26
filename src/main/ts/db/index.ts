@@ -1,11 +1,11 @@
 import Sequelize, {Transaction} from "sequelize";
 import {DBConfig} from "../config/config";
-import {object} from "prop-types";
+
 
 export interface DataBaseInterface {
     sequelize: Sequelize.Sequelize;
 
-    checkConnection(): Promise<void>;
+    checkConnection(): void;
 }
 
 export class DataBase implements DataBaseInterface {
@@ -38,12 +38,28 @@ export class DataBase implements DataBaseInterface {
         this._sequelize = value;
     }
 
-    checkConnection(): Promise<void> {
-        return this.sequelize.authenticate();
+    checkConnection(): void {
+        this.sequelize.authenticate()
+            .then(res => {
+                console.log("DB connection is successful")
+            })
+            .catch(err => {
+                throw err;
+            })
+    }
+
+    syncModel<T, R>(model: Sequelize.Model<T, R>): void {
+        model.sync()
+            .then(res => {
+                //todo good point for logger
+                console.log(`Model [${model.name}] Synchronized`)
+            })
+            .catch(err => {
+                throw err;
+            })
     }
 
     getAllEntries<T, R>(model: Sequelize.Model<T, R>): Promise<Array<T>> {
-        // @ts-ignore
         return new Promise<Array<T>>((resolve: Function, reject: Function) => {
             this.sequelize.transaction((t: Transaction) => {
                 return model.findAll()
@@ -58,7 +74,6 @@ export class DataBase implements DataBaseInterface {
     }
 
     createEntry<T, R>(model: Sequelize.Model<T, R>, instance: R): Promise<T> {
-        // @ts-ignore
         return new Promise<T>((resolve: Function, reject: Function) => {
             if (instance) {
 

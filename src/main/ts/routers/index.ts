@@ -6,6 +6,7 @@ export const router = Router();
 
 const db = new DataBase();
 const User = UserModel(db.sequelize);
+db.syncModel(User);
 
 router.get("/data", (req: Request, res: Response) => {
     db.getAllEntries(User)

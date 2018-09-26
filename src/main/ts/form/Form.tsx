@@ -56,11 +56,12 @@ export default class Form extends React.Component<FormPropsInterface, FormStateI
     };
 
     addUser = (event: React.FormEvent<HTMLFormElement>) => {
-        const user = new User(
-            this.state.username,
-            this.state.password
-        );
-        axios.post("/api/create", user)
+        axios.post("/api/create",
+            new User(
+                this.state.username,
+                this.state.password
+            )
+        )
             .then((res: AxiosResponse) => {
                 this.setState({
                     responseText: res.statusText
