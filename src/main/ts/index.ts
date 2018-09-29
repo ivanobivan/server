@@ -3,43 +3,38 @@ import cookieParser from "cookie-parser";
 import express, {Express, Request, Response} from "express";
 import cookieSession from "cookie-session";
 import {ServerConfig} from "./config/config";
-import {db, router, UserModelInstance} from "./routers"
-import passport, {PassportStatic} from "passport";
+import { RouterWrapper} from "./routers"
 import {UserInstance} from "./db/models/User";
-import {User} from "./form/instances/User";
+import {User} from "./db/instances/User";
 
-class Server {
+//todo logger morgan
+export class Server {
     private app: Express;
+    static routerWrapper:RouterWrapper;
 
     constructor() {
         this.app = express();
         this.app.use(bodyParser.json());
         this.app.use(cookieParser());
-        this.app.use("/api", router);
         this.app.use((error: Error, req: Request, res: Response, next: Function) => {
             if (error) {
                 res.status(400).send(error);
             }
         });
-        passport.serializeUser((user: UserInstance, done: Function) => {
-            done(null, user.uuid);
-        });
-        passport.deserializeUser(async (uuid: string, done: Function) => {
-            try {
-                const entry = await db.getEntry(uuid, UserModelInstance);
-                if (entry) {
-                    const data = new User(
-                        entry.username,
-                        entry.password,
-                    );
-                    return done(null, data);
-                }
-                return done(null, false);
+        const routerWrapper = new RouterWrapper();
+        Server.routerWrapper = routerWrapper;
+        routerWrapper.syncAllDBEntries();
 
-            } catch (error) {
-                return done(null, false);
-            }
-        });
+        const localAuth = routerWrapper.localAuthentication;
+
+        localAuth.passport.use(
+            localAuth.strategyLogInName,
+            localAuth.logIn
+        );
+        localAuth.passport.use(
+            localAuth.strategySignUpName,
+            localAuth.signUp
+        );
         this.app.use(
             cookieSession({
                 name: "cookie-session",
@@ -48,8 +43,30 @@ class Server {
                 secure: true
             })
         );
-        this.app.use(passport.initialize());
-        this.app.use(passport.session());
+        this.app.use(localAuth.passport.initialize());
+        this.app.use(localAuth.passport.session());
+        localAuth.passport.serializeUser((user: UserInstance, done: Function) => {
+            done(null, user.uuid);
+        });
+        localAuth.passport.deserializeUser(async (uuid: string, done: Function) => {
+            try {
+                const model = routerWrapper.getUserModel();
+                if (model) {
+                    const entry = await routerWrapper.db.getEntry(uuid, model);
+                    if (entry) {
+                        return done(null, entry);
+                    }
+                }
+                return done(null, false);
+
+            } catch (error) {
+                return done(null, false);
+            }
+        });
+        routerWrapper.hangApiRoutes();
+        routerWrapper.hangAuthRoutes();
+        this.app.use("/api", routerWrapper.apiRouter);
+        this.app.use("/auth", routerWrapper.authRouter);
     }
 
     start(): void {

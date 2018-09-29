@@ -1,5 +1,5 @@
 import React from "react";
-import {User} from "./instances/User";
+import {User} from "../db/instances/User";
 
 export interface FormPropsInterface {
 
@@ -12,6 +12,8 @@ export interface FormStateInterface {
     password: string;
     uuid: string;
     responseText: string;
+    logInUsername: string;
+    logInPassword: string;
 }
 
 export default class Form extends React.Component<FormPropsInterface, FormStateInterface> {
@@ -23,7 +25,9 @@ export default class Form extends React.Component<FormPropsInterface, FormStateI
             username: "",
             password: "",
             uuid: "",
-            responseText: ""
+            responseText: "",
+            logInUsername: "",
+            logInPassword: ""
         }
     }
 
@@ -59,6 +63,17 @@ export default class Form extends React.Component<FormPropsInterface, FormStateI
         });
     };
 
+    onChangeLogInUsername = (event: React.FormEvent<HTMLInputElement>) => {
+        this.setState({
+            logInUsername: event.currentTarget.value
+        });
+    };
+
+    onChangeLogInPassword = (event: React.FormEvent<HTMLInputElement>) => {
+        this.setState({
+            logInPassword: event.currentTarget.value
+        });
+    };
     addUser = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
         event.preventDefault();
         try {
@@ -102,6 +117,27 @@ export default class Form extends React.Component<FormPropsInterface, FormStateI
             this.setState({
                 current: user
             })
+        } catch (e) {
+            throw e;
+        }
+    };
+
+    logInUser = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
+        event.preventDefault();
+        try {
+            const res = await fetch("/auth/logIn", {
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                method: "POST",
+                body: JSON.stringify({
+                    username: this.state.logInUsername,
+                    password: this.state.logInPassword
+                })
+            });
+            const data = await res.json();
+            console.log(data);
         } catch (e) {
             throw e;
         }
@@ -156,7 +192,7 @@ export default class Form extends React.Component<FormPropsInterface, FormStateI
                 <fieldset>
                     <legend>Get User</legend>
                     <form onSubmit={this.getUser}>
-                        <label htmlFor="uuid">Password</label>
+                        <label htmlFor="uuid">UUID</label>
                         <input
                             type="text"
                             name="uuid"
@@ -165,6 +201,29 @@ export default class Form extends React.Component<FormPropsInterface, FormStateI
                             onChange={this.onChangeUuid}
                         />
                         <button type="submit">Get</button>
+                    </form>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Log In User</legend>
+                    <form onSubmit={this.logInUser}>
+                        <label htmlFor="usernameLogIn">User name</label>
+                        <input
+                            type="text"
+                            name="username"
+                            id="usernameLogIn"
+                            value={this.state.logInUsername}
+                            onChange={this.onChangeLogInUsername}
+                        />
+                        <label htmlFor="passwordLogIn">Password</label>
+                        <input
+                            type="password"
+                            name="password"
+                            id="passwordLogIn"
+                            value={this.state.logInPassword}
+                            onChange={this.onChangeLogInPassword}
+                        />
+                        <button type="submit">Log In</button>
                     </form>
                 </fieldset>
 

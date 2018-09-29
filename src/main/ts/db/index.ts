@@ -96,7 +96,6 @@ export class DataBase implements DataBaseInterface {
             this.sequelize.transaction((t: Transaction) => {
                 return model.findByPrimary(uuid)
                     .then((entry: T | null) => {
-                        console.log(entry);
                         resolve(entry);
                     })
                     .catch((error: Error) => {
@@ -106,4 +105,20 @@ export class DataBase implements DataBaseInterface {
         });
     }
 
+    getEntryByUsername<T, R>(username: string, model: Sequelize.Model<T, R>): Promise<T> {
+        return new Promise<T>((resolve: Function, reject: Function) => {
+            this.sequelize.transaction((t: Transaction) => {
+                return model.findOne({
+                    // @ts-ignore
+                    username: username
+                })
+                    .then((entry: T | null) => {
+                        resolve(entry);
+                    })
+                    .catch((error: Error) => {
+                        reject(error);
+                    });
+            });
+        });
+    }
 }
