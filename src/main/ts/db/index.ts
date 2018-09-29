@@ -1,4 +1,4 @@
-import Sequelize, {Transaction} from "sequelize";
+import Sequelize, {and, col, FindOptions, fn, or, Transaction, where, WhereOptions} from "sequelize";
 import {DBConfig} from "../config/config";
 
 
@@ -6,6 +6,15 @@ export interface DataBaseInterface {
     sequelize: Sequelize.Sequelize;
 
     checkConnection(): void;
+
+    createEntry<T, R>(model: Sequelize.Model<T, R>, instance: R): Promise<T>;
+
+    getEntry<T, R>(uuid: string, model: Sequelize.Model<T, R>): Promise<T>;
+
+    getAllEntries<T, R>(model: Sequelize.Model<T, R>): Promise<Array<T>>;
+
+    deleteEntry<T, R>(uuid: string, model: Sequelize.Model<T, R>): Promise<T>;
+
 }
 
 export class DataBase implements DataBaseInterface {
@@ -105,13 +114,32 @@ export class DataBase implements DataBaseInterface {
         });
     }
 
+
+    deleteEntry<T, R>(uuid: string, model: Sequelize.Model<T, R>): Promise<T> {
+        return new Promise<T>((resolve: Function, reject: Function) => {
+            this.sequelize.transaction((t: Transaction) => {
+                return model.destroy({
+                    where: {uuid}
+                })
+                    .then((wasDeletedCount: number) => {
+                        resolve(wasDeletedCount > 0);
+                    })
+                    .catch((error: Error) => {
+                        reject(error);
+                    });
+            });
+        });
+    };
+
+    //todo I really mad of that method
     getEntryByUsername<T, R>(username: string, model: Sequelize.Model<T, R>): Promise<T> {
         return new Promise<T>((resolve: Function, reject: Function) => {
             this.sequelize.transaction((t: Transaction) => {
+                //todo I don't know how it doesn't suppress
                 // @ts-ignore
                 return model.findOne({
                     where: {
-                        username: username
+                        username
                     }
                 })
                     .then((entry: T | null) => {
@@ -122,5 +150,5 @@ export class DataBase implements DataBaseInterface {
                     });
             });
         });
-    }
+    };
 }

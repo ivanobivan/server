@@ -102,7 +102,7 @@ export default class Form extends React.Component<FormPropsInterface, FormStateI
     getUser = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
         event.preventDefault();
         try {
-            const res = await fetch("/api/get", {
+            const res = await fetch("/api/delete", {
                     headers: {
                         'Accept': 'application/json',
                         'Content-Type': 'application/json'
@@ -166,7 +166,7 @@ export default class Form extends React.Component<FormPropsInterface, FormStateI
                 }
                 <button onClick={this.getData}>Take records</button>
                 <fieldset>
-                    <legend>Add User</legend>
+                    <legend>Create User</legend>
                     <form onSubmit={this.addUser}>
                         <label htmlFor="username">User name</label>
                         <input
@@ -184,13 +184,13 @@ export default class Form extends React.Component<FormPropsInterface, FormStateI
                             value={this.state.password}
                             onChange={this.onChangePassword}
                         />
-                        <button type="submit">Send</button>
+                        <button type="submit">Create</button>
                         <span>{this.state.responseText}</span>
                     </form>
                 </fieldset>
 
                 <fieldset>
-                    <legend>Get User</legend>
+                    <legend>Get/Delete User</legend>
                     <form onSubmit={this.getUser}>
                         <label htmlFor="uuid">UUID</label>
                         <input
@@ -201,6 +201,7 @@ export default class Form extends React.Component<FormPropsInterface, FormStateI
                             onChange={this.onChangeUuid}
                         />
                         <button type="submit">Get</button>
+                        <button type="submit">Delete</button>
                     </form>
                 </fieldset>
 

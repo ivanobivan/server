@@ -8,6 +8,7 @@ import {AppWrapper} from "./routers"
 //todo logger morgan
 export class Server {
     private app: Express;
+    //todo i need thinking about that hook
     static WRAPPER: AppWrapper;
 
     constructor() {

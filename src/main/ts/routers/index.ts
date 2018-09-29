@@ -102,7 +102,7 @@ export class AppWrapper {
         this.db.checkConnection();
     }
 
-    //todo this some thoughts about extensible and about routes too
+    //todo this some thoughts about extensible
     public getEntryModel(name: string): Sequelize.Model<any, any> | undefined {
         return this.DBEntries.get(name);
 
@@ -148,6 +148,21 @@ export class AppWrapper {
                 if (model) {
                     const data: UserInstance = await this.db.getEntry(req.body.uuid, model);
                     return res.status(201).send(data);
+                }
+                return res.status(400);
+            } catch (e) {
+                return res.status(400).send(e);
+            }
+        });
+
+        this.apiRouter.post("/delete", async (req: Request, res: Response) => {
+            //todo need think about replace body.uuid
+            try {
+                const model = this.getEntryModel(User.ENTRY_NAME);
+                if (model) {
+                    //todo not extensible uuid again
+                    const result: number = await this.db.deleteEntry(req.body.uuid, model);
+                    return res.status(201).send(result);
                 }
                 return res.status(400);
             } catch (e) {
