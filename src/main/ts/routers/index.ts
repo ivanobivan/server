@@ -42,6 +42,14 @@ export class RouterWrapper {
         });
         this._apiRouter = Router();
         this._authRouter = Router();
+        this.localAuthentication.passport.use(
+            this.localAuthentication.strategyLogInName,
+            this.localAuthentication.logIn
+        );
+        this.localAuthentication.passport.use(
+            this.localAuthentication.strategySignUpName,
+            this.localAuthentication.signUp
+        );
     }
 
     get db(): DataBase {

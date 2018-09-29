@@ -4,12 +4,11 @@ import express, {Express, Request, Response} from "express";
 import cookieSession from "cookie-session";
 import {ServerConfig} from "./config/config";
 import {RouterWrapper} from "./routers"
-import {UserInstance} from "./db/models/User";
 
 //todo logger morgan
 export class Server {
     private app: Express;
-    static routerWrapper:RouterWrapper;
+    static routerWrapper: RouterWrapper;
 
     constructor() {
         this.app = express();
@@ -23,17 +22,6 @@ export class Server {
         const routerWrapper = new RouterWrapper();
         Server.routerWrapper = routerWrapper;
         routerWrapper.syncAllDBEntries();
-
-        const localAuth = routerWrapper.localAuthentication;
-
-        localAuth.passport.use(
-            localAuth.strategyLogInName,
-            localAuth.logIn
-        );
-        localAuth.passport.use(
-            localAuth.strategySignUpName,
-            localAuth.signUp
-        );
         this.app.use(
             cookieSession({
                 name: "cookie-session",
@@ -42,8 +30,8 @@ export class Server {
                 secure: true
             })
         );
-        this.app.use(localAuth.passport.initialize());
-        this.app.use(localAuth.passport.session());
+        this.app.use(routerWrapper.localAuthentication.passport.initialize());
+        this.app.use(routerWrapper.localAuthentication.passport.session());
         routerWrapper.hangApiRoutes();
         routerWrapper.hangAuthRoutes();
         this.app.use("/api", routerWrapper.apiRouter);
