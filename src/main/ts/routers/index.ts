@@ -4,10 +4,9 @@ import UserModel, {UserAttributes, UserInstance} from "../db/models/User";
 import {LocalAuthentication} from "../authentication";
 import Sequelize from "sequelize";
 import {User} from "../db/instances/User";
-import {Res} from "awesome-typescript-loader/dist/checker/protocol";
 
 
-export class RouterWrapper {
+export class AppWrapper {
     private _db: DataBase;
     private _DBEntries: Map<string, Sequelize.Model<any, any>> = new Map();
     private _localAuthentication: LocalAuthentication;
@@ -18,6 +17,7 @@ export class RouterWrapper {
         this._db = new DataBase();
         const userEntry = UserModel(this._db.sequelize);
         this._DBEntries.set(User.ENTRY_NAME, userEntry);
+        this.syncAllDBEntries();
         this._localAuthentication = new LocalAuthentication(
             "localAuthentication-logIn",
             "localAuthentication-signUp"

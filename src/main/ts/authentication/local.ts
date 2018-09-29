@@ -6,10 +6,10 @@ import {Server} from "../index";
 export const localLogin = new Strategy(
     async (username: string, password: string, done: Function) => {
         try {
-            const model = Server.routerWrapper.getUserModel();
+            const model = Server.WRAPPER.getUserModel();
             let entry: UserInstance | null = null;
             if (model) {
-                entry = await Server.routerWrapper.db.getEntryByUsername(username, model);
+                entry = await Server.WRAPPER.db.getEntryByUsername(username, model);
             }
             if (entry) {
                 return done(null, entry);

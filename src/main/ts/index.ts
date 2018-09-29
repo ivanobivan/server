@@ -3,12 +3,12 @@ import cookieParser from "cookie-parser";
 import express, {Express, Request, Response} from "express";
 import cookieSession from "cookie-session";
 import {ServerConfig} from "./config/config";
-import {RouterWrapper} from "./routers"
+import {AppWrapper} from "./routers"
 
 //todo logger morgan
 export class Server {
     private app: Express;
-    static routerWrapper: RouterWrapper;
+    static WRAPPER: AppWrapper;
 
     constructor() {
         this.app = express();
@@ -19,9 +19,7 @@ export class Server {
                 res.status(400).send(error);
             }
         });
-        const routerWrapper = new RouterWrapper();
-        Server.routerWrapper = routerWrapper;
-        routerWrapper.syncAllDBEntries();
+        Server.WRAPPER = new AppWrapper();
         this.app.use(
             cookieSession({
                 name: "cookie-session",
@@ -30,10 +28,10 @@ export class Server {
                 secure: true
             })
         );
-        this.app.use(routerWrapper.localAuthentication.passport.initialize());
-        this.app.use(routerWrapper.localAuthentication.passport.session());
-        this.app.use("/api", routerWrapper.apiRouter);
-        this.app.use("/auth", routerWrapper.authRouter);
+        this.app.use(Server.WRAPPER.localAuthentication.passport.initialize());
+        this.app.use(Server.WRAPPER.localAuthentication.passport.session());
+        this.app.use("/api", Server.WRAPPER.apiRouter);
+        this.app.use("/auth", Server.WRAPPER.authRouter);
     }
 
     start(): void {
