@@ -32,8 +32,6 @@ export class Server {
         );
         this.app.use(routerWrapper.localAuthentication.passport.initialize());
         this.app.use(routerWrapper.localAuthentication.passport.session());
-        routerWrapper.hangApiRoutes();
-        routerWrapper.hangAuthRoutes();
         this.app.use("/api", routerWrapper.apiRouter);
         this.app.use("/auth", routerWrapper.authRouter);
     }

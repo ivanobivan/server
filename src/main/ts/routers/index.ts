@@ -42,6 +42,8 @@ export class RouterWrapper {
         });
         this._apiRouter = Router();
         this._authRouter = Router();
+        this.hangApiRoutes();
+        this.hangAuthRoutes();
         this.localAuthentication.passport.use(
             this.localAuthentication.strategyLogInName,
             this.localAuthentication.logIn
