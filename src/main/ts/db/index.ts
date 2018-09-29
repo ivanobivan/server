@@ -108,9 +108,11 @@ export class DataBase implements DataBaseInterface {
     getEntryByUsername<T, R>(username: string, model: Sequelize.Model<T, R>): Promise<T> {
         return new Promise<T>((resolve: Function, reject: Function) => {
             this.sequelize.transaction((t: Transaction) => {
+                // @ts-ignore
                 return model.findOne({
-                    // @ts-ignore
-                    username: username
+                    where: {
+                        username: username
+                    }
                 })
                     .then((entry: T | null) => {
                         resolve(entry);

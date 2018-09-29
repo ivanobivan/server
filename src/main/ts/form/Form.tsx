@@ -131,10 +131,10 @@ export default class Form extends React.Component<FormPropsInterface, FormStateI
                     'Content-Type': 'application/json'
                 },
                 method: "POST",
-                body: JSON.stringify({
-                    username: this.state.logInUsername,
-                    password: this.state.logInPassword
-                })
+                body: JSON.stringify(new User(
+                    this.state.logInUsername,
+                    this.state.logInPassword
+                ))
             });
             const data = await res.json();
             console.log(data);

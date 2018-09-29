@@ -3,9 +3,8 @@ import cookieParser from "cookie-parser";
 import express, {Express, Request, Response} from "express";
 import cookieSession from "cookie-session";
 import {ServerConfig} from "./config/config";
-import { RouterWrapper} from "./routers"
+import {RouterWrapper} from "./routers"
 import {UserInstance} from "./db/models/User";
-import {User} from "./db/instances/User";
 
 //todo logger morgan
 export class Server {
@@ -45,24 +44,6 @@ export class Server {
         );
         this.app.use(localAuth.passport.initialize());
         this.app.use(localAuth.passport.session());
-        localAuth.passport.serializeUser((user: UserInstance, done: Function) => {
-            done(null, user.uuid);
-        });
-        localAuth.passport.deserializeUser(async (uuid: string, done: Function) => {
-            try {
-                const model = routerWrapper.getUserModel();
-                if (model) {
-                    const entry = await routerWrapper.db.getEntry(uuid, model);
-                    if (entry) {
-                        return done(null, entry);
-                    }
-                }
-                return done(null, false);
-
-            } catch (error) {
-                return done(null, false);
-            }
-        });
         routerWrapper.hangApiRoutes();
         routerWrapper.hangAuthRoutes();
         this.app.use("/api", routerWrapper.apiRouter);

@@ -22,6 +22,24 @@ export class RouterWrapper {
             "localAuthentication-logIn",
             "localAuthentication-signUp"
         );
+        this.localAuthentication.passport.serializeUser((user: UserInstance, done: Function) => {
+            done(null, user.uuid);
+        });
+        this.localAuthentication.passport.deserializeUser(async (uuid: string, done: Function) => {
+            try {
+                const model = this.getUserModel();
+                if (model) {
+                    const entry = await this.db.getEntry(uuid, model);
+                    if (entry) {
+                        return done(null, entry);
+                    }
+                }
+                return done(null, false);
+
+            } catch (error) {
+                return done(null, false);
+            }
+        });
         this._apiRouter = Router();
         this._authRouter = Router();
     }
@@ -146,7 +164,7 @@ export class RouterWrapper {
 
         this.authRouter.post('/logIn', (req: Request, res: Response): void | Response => {
             try {
-                console.log("AUTH" + req.body);
+                console.log(req.body);
                 this.localAuthentication.passport.authenticate(
                     this.localAuthentication.strategyLogInName,
                     (e: Error, user: any) => {
