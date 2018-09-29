@@ -23,9 +23,12 @@ export class AppWrapper {
             "localAuthentication-signUp"
         );
         this.localAuthentication.passport.serializeUser((user: UserInstance, done: Function) => {
+            //todo again common entry
+
             done(null, user.uuid);
         });
         this.localAuthentication.passport.deserializeUser(async (uuid: string, done: Function) => {
+            console.log(uuid);
             try {
                 const model = this.getUserModel();
                 if (model) {
@@ -120,11 +123,11 @@ export class AppWrapper {
                 const model = this.getEntryModel(User.ENTRY_NAME);
                 if (model) {
                     const data: Array<UserInstance> = await this.db.getAllEntries(model);
-                    return res.status(201).send(data);
+                    return res.status(200).send(data);
                 }
                 return res.status(400);
             } catch (e) {
-                return res.status(400).send(e);
+                return res.status(500).send(e);
             }
         });
 
@@ -137,7 +140,7 @@ export class AppWrapper {
                 }
                 return res.status(400);
             } catch (e) {
-                return res.status(400).send(e);
+                return res.status(500).send(e);
             }
         });
 
@@ -147,11 +150,11 @@ export class AppWrapper {
                 const model = this.getEntryModel(User.ENTRY_NAME);
                 if (model) {
                     const data: UserInstance = await this.db.getEntry(req.body.uuid, model);
-                    return res.status(201).send(data);
+                    return res.status(200).send(data);
                 }
                 return res.status(400);
             } catch (e) {
-                return res.status(400).send(e);
+                return res.status(500).send(e);
             }
         });
 
@@ -166,7 +169,7 @@ export class AppWrapper {
                 }
                 return res.status(400);
             } catch (e) {
-                return res.status(400).send(e);
+                return res.status(500).send(e);
             }
         });
     };
@@ -189,18 +192,27 @@ export class AppWrapper {
 
         this.authRouter.post('/logIn', (req: Request, res: Response): void | Response => {
             try {
-                console.log(req.body);
+                if (req.user) {
+                    return res.status(409).send({logged: true})
+                }
                 this.localAuthentication.passport.authenticate(
                     this.localAuthentication.strategyLogInName,
+                    //todo user any before I decide what to do with Entries
                     (e: Error, user: any) => {
                         if (e) {
                             return res.status(400).send(e)
                         }
-                        return res.status(201).send(user);
+                        req.logIn(user, (e: Error) => {
+                            if (e) {
+                                return res.status(400).send(e);
+                            }
+                            return res.status(200).send(user);
+                        });
+                        return res.status(400);
                     }
                 )(req, res);
             } catch (e) {
-                return res.status(400).send(e);
+                return res.status(500).send(e);
             }
 
 

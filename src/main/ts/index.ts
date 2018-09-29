@@ -20,15 +20,15 @@ export class Server {
                 res.status(400).send(error);
             }
         });
-        Server.WRAPPER = new AppWrapper();
         this.app.use(
             cookieSession({
-                name: "cookie-session",
                 maxAge: 20 * 24 * 60 * 60 * 1000,
                 secret: "secret",
+                keys: ["ededed"],
                 secure: true
             })
         );
+        Server.WRAPPER = new AppWrapper();
         this.app.use(Server.WRAPPER.localAuthentication.passport.initialize());
         this.app.use(Server.WRAPPER.localAuthentication.passport.session());
         this.app.use("/api", Server.WRAPPER.apiRouter);

@@ -68,7 +68,7 @@ export class DataBase implements DataBaseInterface {
             })
     }
 
-    getAllEntries<T, R>(model: Sequelize.Model<T, R>): Promise<Array<T>> {
+     getAllEntries<T, R>(model: Sequelize.Model<T, R>): Promise<Array<T>> {
         return new Promise<Array<T>>((resolve: Function, reject: Function) => {
             this.sequelize.transaction((t: Transaction) => {
                 return model.findAll()
