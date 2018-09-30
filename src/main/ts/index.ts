@@ -51,5 +51,5 @@ class Server {
 }
 
 //todo i need thinking about that hook
-export const server = new Server();
+const server = new Server();
 server.start();

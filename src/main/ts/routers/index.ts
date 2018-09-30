@@ -21,11 +21,12 @@ export class AppWrapper {
         this._DBEntries.set(User.ENTRY_NAME, userEntry);
         this.syncAllDBEntries();
         this._localAuthentication = new LocalAuthentication(
-            localLogin,
+            localLogin(userEntry, this.db),
             localSignUp,
             "localAuthentication-logIn",
             "localAuthentication-signUp"
         );
+        this.localAuthentication.setUserCookie(userEntry, this.db);
         this._apiRouter = Router();
         this._authRouter = Router();
         this.hangApiRoutes();

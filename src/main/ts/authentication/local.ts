@@ -1,30 +1,29 @@
 import {Strategy} from "passport-local";
 import bcrypt from "bcrypt-nodejs";
-import {UserInstance} from "../db/models/User";
-import {server} from "../index";
+import {UserAttributes, UserInstance} from "../db/models/User";
 import {User} from "../db/instances/User";
+import {DataBase} from "../db";
+import Sequelize from "sequelize";
 
-export const localLogin = new Strategy(
-    async (username: string, password: string, done: Function) => {
-        try {
-            const model = server.wrapper.getUserModel();
-            let entry: UserInstance | null = null;
-            if (model) {
-                entry = await server.wrapper.db.getEntryByUsername(username, model);
+export const localLogin = (model:Sequelize.Model<UserAttributes, UserInstance>, db: DataBase) => {
+    return new Strategy(
+        async (username: string, password: string, done: Function) => {
+            try {
+                const entry = await db.getEntryByUsername(username, model);
                 if (entry) {
                     return done(null, new User(entry.username, entry.password));
                 }
+                //todo need compare password
+                /*if (bcrypt.compareSync(password, entry.password)) {
+                    return done(null, entry);
+                }*/
+                return done(null, false, {message: "Incorrect Password"});
+            } catch (error) {
+                return done(error);
             }
-            //todo need compare password
-            /*if (bcrypt.compareSync(password, entry.password)) {
-                return done(null, entry);
-            }*/
-            return done(null, false, {message: "Incorrect Password"});
-        } catch (error) {
-            return done(error);
         }
-    }
-);
+    )
+};
 
 // @ts-ignore
 export const localSignUp = new Strategy(
