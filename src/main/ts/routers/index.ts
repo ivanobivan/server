@@ -4,6 +4,8 @@ import UserModel, {UserAttributes, UserInstance} from "../db/models/User";
 import {LocalAuthentication} from "../authentication";
 import Sequelize from "sequelize";
 import {User} from "../db/instances/User";
+import {localLogin, localSignUp} from "../authentication/local";
+import passport from "passport";
 
 
 export class AppWrapper {
@@ -19,42 +21,15 @@ export class AppWrapper {
         this._DBEntries.set(User.ENTRY_NAME, userEntry);
         this.syncAllDBEntries();
         this._localAuthentication = new LocalAuthentication(
+            localLogin,
+            localSignUp,
             "localAuthentication-logIn",
             "localAuthentication-signUp"
         );
-        this.localAuthentication.passport.serializeUser((user: UserInstance, done: Function) => {
-            //todo again common entry
-
-            done(null, user.uuid);
-        });
-        this.localAuthentication.passport.deserializeUser(async (uuid: string, done: Function) => {
-            console.log(uuid);
-            try {
-                const model = this.getUserModel();
-                if (model) {
-                    const entry = await this.db.getEntry(uuid, model);
-                    if (entry) {
-                        return done(null, entry);
-                    }
-                }
-                return done(null, false);
-
-            } catch (error) {
-                return done(null, false);
-            }
-        });
         this._apiRouter = Router();
         this._authRouter = Router();
         this.hangApiRoutes();
         this.hangAuthRoutes();
-        this.localAuthentication.passport.use(
-            this.localAuthentication.strategyLogInName,
-            this.localAuthentication.logIn
-        );
-        this.localAuthentication.passport.use(
-            this.localAuthentication.strategySignUpName,
-            this.localAuthentication.signUp
-        );
     }
 
     get db(): DataBase {
@@ -111,6 +86,7 @@ export class AppWrapper {
 
     }
 
+    //todo I really don't want to see that anymore
     public getUserModel(): Sequelize.Model<UserInstance, UserAttributes> | undefined {
         return this.DBEntries.get(User.ENTRY_NAME);
 
@@ -179,7 +155,7 @@ export class AppWrapper {
     hangAuthRoutes(): void {
         this.authRouter.post('/signUp', (req: Request, res: Response) => {
             try {
-                const user = this.localAuthentication.authenticate(
+                const user = this.localAuthentication.passport.authenticate(
                     this.localAuthentication.strategySignUpName);
                 if (user) {
                     return res.status(200).send(user);
@@ -190,33 +166,39 @@ export class AppWrapper {
             }
         });
 
-        this.authRouter.post('/logIn', (req: Request, res: Response): void | Response => {
+        this.authRouter.post('/logIn', async (req: Request, res: Response) => {
             try {
-                if (req.user) {
-                    return res.status(409).send({logged: true})
-                }
-                this.localAuthentication.passport.authenticate(
-                    this.localAuthentication.strategyLogInName,
-                    //todo user any before I decide what to do with Entries
-                    (e: Error, user: any) => {
-                        if (e) {
-                            return res.status(400).send(e)
-                        }
-                        req.logIn(user, (e: Error) => {
+                if (req.isUnauthenticated()) {
+                    return this.localAuthentication.passport.authenticate(
+                        this.localAuthentication.strategyLogInName,
+                        (e: Error, user: User) => {
                             if (e) {
-                                return res.status(400).send(e);
+                                throw e;
                             }
-                            return res.status(200).send(user);
-                        });
-                        return res.status(400);
-                    }
-                )(req, res);
+                            req.logIn(user, (err) => {
+                                if (err) {
+                                    throw err;
+                                }
+                                return res.sendStatus(200);
+                            });
+                        }
+                    )(req, res);
+                }
+                return await res.sendStatus(409);
             } catch (e) {
                 return res.status(500).send(e);
             }
 
 
         });
+
+        this.authRouter.get("/logOut", (req: Request, res: Response) => {
+            if (req.isAuthenticated()) {
+                req.logOut();
+                return res.sendStatus(200);
+            }
+            return res.sendStatus(409);
+        })
     };
 }
 

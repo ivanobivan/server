@@ -1,18 +1,19 @@
 import {Strategy} from "passport-local";
 import bcrypt from "bcrypt-nodejs";
 import {UserInstance} from "../db/models/User";
-import {Server} from "../index";
+import {server} from "../index";
+import {User} from "../db/instances/User";
 
 export const localLogin = new Strategy(
     async (username: string, password: string, done: Function) => {
         try {
-            const model = Server.WRAPPER.getUserModel();
+            const model = server.wrapper.getUserModel();
             let entry: UserInstance | null = null;
             if (model) {
-                entry = await Server.WRAPPER.db.getEntryByUsername(username, model);
-            }
-            if (entry) {
-                return done(null, entry);
+                entry = await server.wrapper.db.getEntryByUsername(username, model);
+                if (entry) {
+                    return done(null, new User(entry.username, entry.password));
+                }
             }
             //todo need compare password
             /*if (bcrypt.compareSync(password, entry.password)) {
@@ -26,10 +27,8 @@ export const localLogin = new Strategy(
 );
 
 // @ts-ignore
-export const localSignUp = new Strategy({
-        passReqToCallback: true
-    },
-    async (req: Request, username: string, password: string, done: Function): Promise<void> => {
+export const localSignUp = new Strategy(
+    async (username: string, password: string, done: Function): Promise<void> => {
         try {
             //todo here i want to salt that password
             /*if(req.body) {

@@ -132,7 +132,7 @@ export default class Form extends React.Component<FormPropsInterface, FormStateI
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
                 },
-                credentials: "include",
+                credentials:"include",
                 method: "POST",
                 body: JSON.stringify(new User(
                     this.state.logInUsername,
@@ -140,11 +140,17 @@ export default class Form extends React.Component<FormPropsInterface, FormStateI
                 ))
             });
             const data = await res.json();
-            if (data.logged !== this.state.logInState) {
-                this.setState({
-                    logInState: data.logged
-                });
-            }
+            console.log(data);
+        } catch (e) {
+            throw e;
+        }
+    };
+
+    logOut = async (event: React.MouseEvent) => {
+        try {
+            const res = await fetch("auth/logOut");
+            const data = await res.json();
+            console.log(data);
         } catch (e) {
             throw e;
         }
@@ -235,7 +241,10 @@ export default class Form extends React.Component<FormPropsInterface, FormStateI
                         <span>Are you logged now? [{String(this.state.logInState)}]</span>
                     </form>
                 </fieldset>
-
+                <fieldset>
+                    <legend>Log Out</legend>
+                    <button onClick={this.logOut}>Log Out</button>
+                </fieldset>
             </div>
         )
     }

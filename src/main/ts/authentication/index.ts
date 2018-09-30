@@ -1,33 +1,58 @@
-import {localLogin, localSignUp} from "./local"
 import {Strategy} from "passport-local";
 import passport, {PassportStatic} from "passport";
-import {User} from "../db/instances/User";
+import {UserInstance} from "../db/models/User";
+import {server} from "../index";
 
-export interface Authentication {
-    logIn: Strategy;
-    signUp: Strategy;
+abstract class Authentication {
+    abstract _logIn: Strategy;
+    abstract _signUp: Strategy;
     passport: PassportStatic;
-    strategyLogInName: string;
-    strategySignUpName: string;
+    abstract _strategyLogInName: string;
+    abstract _strategySignUpName: string;
 
-    authenticate(strategy: string): User | any;
+    protected constructor() {
+        this.passport = passport;
+    }
 }
 
-export class LocalAuthentication implements Authentication {
+export class LocalAuthentication extends Authentication {
 
-    private _logIn: Strategy;
-    private _signUp: Strategy;
-    private _passport: PassportStatic;
-    private _strategyLogInName: string;
-    private _strategySignUpName: string;
+    _logIn: Strategy;
+    _signUp: Strategy;
+    _strategyLogInName: string;
+    _strategySignUpName: string;
 
 
-    constructor(strategyLogInName: string, strategySignUpName: string) {
-        this._logIn = localLogin;
-        this._signUp = localSignUp;
-        this._passport = passport;
+    constructor(logIn: Strategy, signUp: Strategy, strategyLogInName: string, strategySignUpName: string) {
+        super();
+        this._logIn = logIn;
+        this._signUp = signUp;
         this._strategyLogInName = strategyLogInName;
         this._strategySignUpName = strategySignUpName;
+        this.passport.serializeUser(
+            (user: UserInstance, done: Function) => {
+                done(null, user.username)
+            }
+        );
+        this.passport.deserializeUser(
+            async (username: string, done: Function) => {
+                try {
+                    const model = server.wrapper.getUserModel();
+                    if (model) {
+                        const entry = await server.wrapper.db.getEntryByUsername(username, model);
+                        if (entry) {
+                            return done(null, entry);
+                        }
+                    }
+                    return done(null, false);
+
+                } catch (error) {
+                    return done(null, false);
+                }
+            }
+        );
+        this.passport.use(this.strategyLogInName, this.logIn);
+        this.passport.use(this.strategySignUpName, this.signUp);
     }
 
     get logIn(): Strategy {
@@ -48,13 +73,12 @@ export class LocalAuthentication implements Authentication {
 
 
     get passport(): passport.PassportStatic {
-        return this._passport;
+        return super.passport;
     }
 
     set passport(value: passport.PassportStatic) {
-        this._passport = value;
+        super.passport = value;
     }
-
 
     get strategyLogInName(): string {
         return this._strategyLogInName;
@@ -72,14 +96,4 @@ export class LocalAuthentication implements Authentication {
         this._strategySignUpName = value;
     }
 
-    authenticate(strategy: string): User | any {
-        this.passport.authenticate(strategy,
-            (e: Error, user: User) => {
-                if (e) {
-                    throw e;
-                }
-                return user;
-            }
-        )
-    }
 }
