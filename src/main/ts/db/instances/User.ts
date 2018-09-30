@@ -6,12 +6,22 @@ export class User implements UserAttributes {
     username: string;
     password: string;
     uuid?: string;
+    email?: string;
+    provider?: string;
+    socialId?: number;
 
-    constructor(username: string, password: string, uuid?: string) {
+
+    constructor(
+        username: string,
+        password: string,
+        provider?: string,
+        socialId?: number,
+        email?: string,
+    ) {
         this.username = username;
         this.password = password;
-        this.uuid = uuid;
+        this.provider = provider;
+        this.socialId = socialId;
+        this.email = email;
     }
-
-
 }

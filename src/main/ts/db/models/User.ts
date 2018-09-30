@@ -4,6 +4,9 @@ export interface UserAttributes {
     username: string;
     password: string;
     uuid?: string;
+    socialId?: number;
+    provider?: string;
+    email?: string;
 }
 
 export interface UserInstance extends UserAttributes {
@@ -25,6 +28,12 @@ export default (sequelize: Sequelize.Sequelize): Sequelize.Model<UserInstance, U
                     return v.toString(16);
                 });
             }
+        },
+        socialId: Sequelize.INTEGER,
+        provider: Sequelize.STRING,
+        email: {
+            type: Sequelize.STRING,
+            unique: true
         }
     })
 };

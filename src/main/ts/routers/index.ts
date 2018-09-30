@@ -1,17 +1,20 @@
 import {Request, Response, Router} from "express";
 import {DataBase} from "../db";
-import UserModel, {UserAttributes, UserInstance} from "../db/models/User";
-import {LocalAuthentication} from "../authentication";
+import UserModel, {UserInstance} from "../db/models/User";
+
 import Sequelize from "sequelize";
 import {User} from "../db/instances/User";
-import {localLogin, localSignUp} from "../authentication/local";
-import passport from "passport";
+import {localLogIn, localSignUp} from "../authentication/strategy/local";
+import {vkLogin} from "../authentication/strategy/vk";
+import {LocalAuthentication} from "../authentication/class/LocalAuthentication";
+import {VKAuthentication} from "../authentication/class/VKAuthentication";
 
 
 export class AppWrapper {
     private _db: DataBase;
     private _DBEntries: Map<string, Sequelize.Model<any, any>> = new Map();
     private _localAuthentication: LocalAuthentication;
+    private _vkAuthentication: VKAuthentication;
     private _apiRouter: Router;
     private _authRouter: Router;
 
@@ -21,10 +24,14 @@ export class AppWrapper {
         this._DBEntries.set(User.ENTRY_NAME, userEntry);
         this.syncAllDBEntries();
         this._localAuthentication = new LocalAuthentication(
-            localLogin(userEntry, this.db),
+            localLogIn(userEntry, this.db),
             localSignUp(userEntry, this.db),
             "localAuthentication-logIn",
             "localAuthentication-signUp"
+        );
+        this._vkAuthentication = new VKAuthentication(
+            vkLogin(userEntry, this.db),
+            "vkAuthentication-logIn"
         );
         this.localAuthentication.setUserCookie(userEntry, this.db);
         this._apiRouter = Router();
@@ -57,6 +64,15 @@ export class AppWrapper {
         this._localAuthentication = value;
     }
 
+
+    get vkAuthentication(): VKAuthentication {
+        return this._vkAuthentication;
+    }
+
+    set vkAuthentication(value: VKAuthentication) {
+        this._vkAuthentication = value;
+    }
+
     get apiRouter(): Router {
         return this._apiRouter;
     }
@@ -84,12 +100,6 @@ export class AppWrapper {
     //todo this some thoughts about extensible
     public getEntryModel(name: string): Sequelize.Model<any, any> | undefined {
         return this.DBEntries.get(name);
-
-    }
-
-    //todo I really don't want to see that anymore
-    public getUserModel(): Sequelize.Model<UserInstance, UserAttributes> | undefined {
-        return this.DBEntries.get(User.ENTRY_NAME);
 
     }
 
@@ -152,7 +162,6 @@ export class AppWrapper {
     };
 
 
-    //todo sign up not working now
     hangAuthRoutes(): void {
         this.authRouter.post('/signUp', async (req: Request, res: Response) => {
             try {
@@ -201,8 +210,30 @@ export class AppWrapper {
             } catch (e) {
                 return res.status(500).send(e);
             }
+        });
 
+        this.authRouter.get("/vkontakte", async (req: Request, res: Response) => {
+            try {
+                if (req.isUnauthenticated()) {
+                    return await this.vkAuthentication.passport.authenticate(
+                        this.vkAuthentication.strategyLogInName
+                    )(req, res);
+                }
+            } catch (e) {
+                return res.status(500).send(e);
+            }
+        });
 
+        this.authRouter.get("/vkontakte/callback", async (req: Request, res: Response) => {
+            try {
+                if (req.isUnauthenticated()) {
+                    return await this.vkAuthentication.passport.authenticate(
+                        this.vkAuthentication.strategyLogInName
+                    )(req, res);
+                }
+            } catch (e) {
+                return res.status(500).send(e);
+            }
         });
 
         this.authRouter.get("/logOut", (req: Request, res: Response) => {

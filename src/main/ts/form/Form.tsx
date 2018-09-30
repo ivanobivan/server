@@ -144,6 +144,17 @@ export default class Form extends React.Component<FormPropsInterface, FormStateI
         }
     };
 
+    logInUserVK = async (event: React.FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+        try {
+            const res = await fetch("/auth/vkontakte");
+            const data = await res.json();
+            console.log(data);
+        } catch (e) {
+            throw e;
+        }
+    };
+
     logInUser = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         try {
@@ -257,13 +268,19 @@ export default class Form extends React.Component<FormPropsInterface, FormStateI
                             value={this.state.logInPassword}
                             onChange={this.onChangeLogInPassword}
                         />
-                        <button type="submit">Log In</button>
+                        <button type="submit">Log In Local</button>
                     </form>
                 </fieldset>
                 <fieldset>
                     <legend>Log In User</legend>
                     <form onSubmit={this.signUpUser}>
-                        <button type="submit">Sign Up</button>
+                        <button type="submit">Sign Up Local</button>
+                    </form>
+                </fieldset>
+                <fieldset>
+                    <legend>Log In User Vk</legend>
+                    <form onSubmit={this.logInUserVK}>
+                        <button type="submit">Sign Up Local VK</button>
                     </form>
                 </fieldset>
                 <fieldset>

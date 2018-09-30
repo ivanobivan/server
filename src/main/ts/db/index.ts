@@ -1,5 +1,6 @@
 import Sequelize, {and, col, FindOptions, fn, or, Transaction, where, WhereOptions} from "sequelize";
 import {DBConfig} from "../config/config";
+import {UserAttributes, UserInstance} from "./models/User";
 
 
 export interface DataBaseInterface {
@@ -68,7 +69,7 @@ export class DataBase implements DataBaseInterface {
             })
     }
 
-     getAllEntries<T, R>(model: Sequelize.Model<T, R>): Promise<Array<T>> {
+    getAllEntries<T, R>(model: Sequelize.Model<T, R>): Promise<Array<T>> {
         return new Promise<Array<T>>((resolve: Function, reject: Function) => {
             this.sequelize.transaction((t: Transaction) => {
                 return model.findAll()
@@ -114,6 +115,25 @@ export class DataBase implements DataBaseInterface {
         });
     }
 
+    getEntryBySocial(socialId: number, provider: string, model: Sequelize.Model<UserInstance, UserAttributes>):
+        Promise<UserAttributes> {
+        return new Promise<UserInstance>((resolve: Function, reject: Function) => {
+            this.sequelize.transaction((t: Transaction) => {
+                return model.findOne({
+                    where: {
+                        socialId: socialId,
+                        provider: provider
+                    }
+                })
+                    .then((entry: UserAttributes | null) => {
+                        resolve(entry);
+                    })
+                    .catch((error: Error) => {
+                        reject(error);
+                    });
+            });
+        });
+    }
 
     deleteEntry<T, R>(uuid: string, model: Sequelize.Model<T, R>): Promise<T> {
         return new Promise<T>((resolve: Function, reject: Function) => {
@@ -132,17 +152,19 @@ export class DataBase implements DataBaseInterface {
     };
 
     //todo I really mad of that method
-    getEntryByUsername<T, R>(username: string, model: Sequelize.Model<T, R>): Promise<T> {
-        return new Promise<T>((resolve: Function, reject: Function) => {
+    //todo i need to extend my base Entry DataBase with separate method from other parts
+    //todo base DataBase have to make only CRUD-direction
+    getEntryByUsername(username: string, model: Sequelize.Model<UserInstance, UserAttributes>):
+        Promise<UserAttributes> {
+        return new Promise<UserInstance>((resolve: Function, reject: Function) => {
             this.sequelize.transaction((t: Transaction) => {
                 //todo I don't know how it doesn't suppress
-                // @ts-ignore
                 return model.findOne({
                     where: {
-                        username
+                        username: username
                     }
                 })
-                    .then((entry: T | null) => {
+                    .then((entry: UserAttributes | null) => {
                         resolve(entry);
                     })
                     .catch((error: Error) => {

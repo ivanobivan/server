@@ -6,13 +6,13 @@ import {ServerConfig} from "./config/config";
 import {AppWrapper} from "./routers"
 
 //todo logger morgan
+//todo realize problem with Sequalize.{anyone}, rename
 class Server {
     private app: Express;
-    private readonly _wrapper: AppWrapper;
 
     constructor() {
         this.app = express();
-        this.app.use(bodyParser.urlencoded({ extended: false }));
+        this.app.use(bodyParser.urlencoded({extended: false}));
         this.app.use(cookieParser());
         this.app.use(bodyParser.json());
         this.app.use((error: Error, req: Request, res: Response, next: Function) => {
@@ -29,19 +29,15 @@ class Server {
                 //secure:  - https only
             })
         );
-        this._wrapper = new AppWrapper();
-        this.app.use(this._wrapper.localAuthentication.passport.initialize());
-        this.app.use(this._wrapper.localAuthentication.passport.session());
+        const wrapper = new AppWrapper();
+        this.app.use(wrapper.localAuthentication.passport.initialize());
+        this.app.use(wrapper.localAuthentication.passport.session());
         this.app.enable("view cache");
         this.app.set('view engine', 'ejs');
-        this.app.use("/api", this._wrapper.apiRouter);
-        this.app.use("/auth", this._wrapper.authRouter);
+        this.app.use("/api", wrapper.apiRouter);
+        this.app.use("/auth", wrapper.authRouter);
     }
 
-
-    get wrapper(): AppWrapper {
-        return this._wrapper;
-    }
 
     start(): void {
         this.app.listen(ServerConfig.PORT, ServerConfig.HOST, () => {
@@ -50,6 +46,5 @@ class Server {
     };
 }
 
-//todo i need thinking about that hook
 const server = new Server();
 server.start();
