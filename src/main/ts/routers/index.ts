@@ -22,7 +22,7 @@ export class AppWrapper {
         this.syncAllDBEntries();
         this._localAuthentication = new LocalAuthentication(
             localLogin(userEntry, this.db),
-            localSignUp,
+            localSignUp(userEntry, this.db),
             "localAuthentication-logIn",
             "localAuthentication-signUp"
         );
@@ -154,14 +154,26 @@ export class AppWrapper {
 
     //todo sign up not working now
     hangAuthRoutes(): void {
-        this.authRouter.post('/signUp', (req: Request, res: Response) => {
+        this.authRouter.post('/signUp', async (req: Request, res: Response) => {
             try {
-                const user = this.localAuthentication.passport.authenticate(
-                    this.localAuthentication.strategySignUpName);
-                if (user) {
-                    return res.status(200).send(user);
+                if (req.isUnauthenticated()) {
+                    return await this.localAuthentication.passport.authenticate(
+                        this.localAuthentication.strategySignUpName,
+                        (e: Error, user: User) => {
+                            if (e) {
+                                throw e;
+                            }
+                            req.logIn(user, (err) => {
+                                if (err) {
+                                    return res.status(422).send(err);
+                                }
+                                return res.sendStatus(200);
+                            });
+                        }
+                    )(req, res);
                 }
-                return res.status(400);
+
+                return await res.status(400);
             } catch (e) {
                 return res.sendStatus(400).send(e);
             }
@@ -170,7 +182,7 @@ export class AppWrapper {
         this.authRouter.post('/logIn', async (req: Request, res: Response) => {
             try {
                 if (req.isUnauthenticated()) {
-                    return this.localAuthentication.passport.authenticate(
+                    return await this.localAuthentication.passport.authenticate(
                         this.localAuthentication.strategyLogInName,
                         (e: Error, user: User) => {
                             if (e) {
@@ -178,14 +190,14 @@ export class AppWrapper {
                             }
                             req.logIn(user, (err) => {
                                 if (err) {
-                                    throw err;
+                                    return res.status(422).send(err);
                                 }
                                 return res.sendStatus(200);
                             });
                         }
                     )(req, res);
                 }
-                return await res.sendStatus(409);
+                return await res.sendStatus(401);
             } catch (e) {
                 return res.status(500).send(e);
             }
@@ -198,7 +210,7 @@ export class AppWrapper {
                 req.logOut();
                 return res.sendStatus(200);
             }
-            return res.sendStatus(409);
+            return res.sendStatus(401);
         })
     };
 }

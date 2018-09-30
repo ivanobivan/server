@@ -5,19 +5,22 @@ import {User} from "../db/instances/User";
 import {DataBase} from "../db";
 import Sequelize from "sequelize";
 
-export const localLogin = (model:Sequelize.Model<UserAttributes, UserInstance>, db: DataBase) => {
+export const localLogin = (model: Sequelize.Model<UserAttributes, UserInstance>, db: DataBase) => {
     return new Strategy(
         async (username: string, password: string, done: Function) => {
             try {
                 const entry = await db.getEntryByUsername(username, model);
-                if (entry) {
-                    return done(null, new User(entry.username, entry.password));
+                if (!entry) {
+                    return done(null, false, {message: "User Not Found"});
                 }
+                if (!bcrypt.compareSync(password, entry.password)) {
+                    return done(null, false, {message: "Incorrect Password"});
+                }
+                return done(null, new User(entry.username, entry.password));
                 //todo need compare password
                 /*if (bcrypt.compareSync(password, entry.password)) {
                     return done(null, entry);
                 }*/
-                return done(null, false, {message: "Incorrect Password"});
             } catch (error) {
                 return done(error);
             }
@@ -25,40 +28,20 @@ export const localLogin = (model:Sequelize.Model<UserAttributes, UserInstance>, 
     )
 };
 
-// @ts-ignore
-export const localSignUp = new Strategy(
-    async (username: string, password: string, done: Function): Promise<void> => {
-        try {
-            //todo here i want to salt that password
-            /*if(req.body) {
-                const entry = db.getEntry(req.body.uuid, UserModelInstance);
-                if (entry) {
-
+export const localSignUp = (model: Sequelize.Model<UserAttributes, UserInstance>, db: DataBase) => {
+    return new Strategy(
+        async (username: string, password: string, done: Function): Promise<void> => {
+            try {
+                const entry = await db.getEntryByUsername(username, model);
+                if (!entry) {
+                    const newUser = new User(username, bcrypt.hashSync(password, bcrypt.genSaltSync(8)));
+                    await db.createEntry(model, newUser);
+                    return done(null, newUser);
                 }
-            }*/
-            /*await UserModelInstance.findOrCreate({
-                where: {
-                    username: username
-                },
-                defaults: {
-                    username: username,
-                    password: password
-                    /!* password: bcrypt.hashSync(
-                        password,
-                        bcrypt.genSaltSync(8)
-                    )*!/
-                }
-            }).spread((values, created) => {
-                if (created) {
-                    done(null, values);
-                } else {
-                    done(null, false, {message: "User exist"});
-                }
-            });*/
-        } catch (e) {
-            done(e)
+                return done(null, false, {message: "User Exist"});
+            } catch (e) {
+                return done(e)
+            }
         }
-
-
-    }
-);
+    )
+};

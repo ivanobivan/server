@@ -14,7 +14,6 @@ export interface FormStateInterface {
     responseText: string;
     logInUsername: string;
     logInPassword: string;
-    logInState: boolean;
 }
 
 export default class Form extends React.Component<FormPropsInterface, FormStateInterface> {
@@ -28,8 +27,7 @@ export default class Form extends React.Component<FormPropsInterface, FormStateI
             uuid: "",
             responseText: "",
             logInUsername: "",
-            logInPassword: "",
-            logInState: false
+            logInPassword: ""
         }
     }
 
@@ -124,7 +122,29 @@ export default class Form extends React.Component<FormPropsInterface, FormStateI
         }
     };
 
-    logInUser = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
+    signUpUser = async (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        try {
+            const res = await fetch("/auth/signUp", {
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                credentials: "include",
+                method: "POST",
+                body: JSON.stringify(new User(
+                    this.state.logInUsername,
+                    this.state.logInPassword
+                ))
+            });
+            const data = await res.json();
+            console.log(data);
+        } catch (e) {
+            throw e;
+        }
+    };
+
+    logInUser = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         try {
             const res = await fetch("/auth/logIn", {
@@ -132,7 +152,7 @@ export default class Form extends React.Component<FormPropsInterface, FormStateI
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
                 },
-                credentials:"include",
+                credentials: "include",
                 method: "POST",
                 body: JSON.stringify(new User(
                     this.state.logInUsername,
@@ -238,7 +258,12 @@ export default class Form extends React.Component<FormPropsInterface, FormStateI
                             onChange={this.onChangeLogInPassword}
                         />
                         <button type="submit">Log In</button>
-                        <span>Are you logged now? [{String(this.state.logInState)}]</span>
+                    </form>
+                </fieldset>
+                <fieldset>
+                    <legend>Log In User</legend>
+                    <form onSubmit={this.signUpUser}>
+                        <button type="submit">Sign Up</button>
                     </form>
                 </fieldset>
                 <fieldset>
