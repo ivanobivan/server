@@ -36,9 +36,9 @@ export class AppWrapper {
         );
 
         const vkSocialData = new VKSocialData(
-            "",
-            "",
-            "",
+            "6707819",
+            "Y5PQ3AMSoxOwzyzOE3Z9",
+            "http://0.0.0.0:8080/auth/vkontakte/callback",
         );
 
         const vkAuthentication = new VKAuthentication(
@@ -250,11 +250,12 @@ export class AppWrapper {
         this.authRouter.get("/vkontakte", async (req: Request, res: Response, next: NextFunction) => {
             try {
                 const vkAuthentication = <VKAuthentication>this.getAuthenticationModel(VKAuthentication.PROVIDER);
-                if (vkAuthentication) {
+                if (req.isUnauthenticated() && vkAuthentication) {
                     return await vkAuthentication.passport.authenticate(
                         vkAuthentication.strategyLogInName
                     )(req, res, next);
                 }
+                return res.sendStatus(409);
             } catch (e) {
                 return res.status(500).send(e);
             }
@@ -263,7 +264,7 @@ export class AppWrapper {
         this.authRouter.get("/vkontakte/callback", async (req: Request, res: Response, next: NextFunction) => {
             try {
                 const vkAuthentication = <VKAuthentication>this.getAuthenticationModel(VKAuthentication.PROVIDER);
-                if (vkAuthentication) {
+                if (req.isUnauthenticated() && vkAuthentication) {
                     return await vkAuthentication.passport.authenticate(
                         vkAuthentication.strategyLogInName,
                         {
@@ -272,6 +273,7 @@ export class AppWrapper {
                         }
                     )(req, res, next);
                 }
+                return res.sendStatus(409);
             } catch (e) {
                 return res.status(500).send(e);
             }
