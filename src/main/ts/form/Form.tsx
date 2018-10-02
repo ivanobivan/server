@@ -145,9 +145,11 @@ export default class Form extends React.Component<FormPropsInterface, FormStateI
     };
 
     logInUserVK = async (event: React.FormEvent<HTMLFormElement>) => {
-      event.preventDefault();
+        event.preventDefault();
         try {
-            const res = await fetch("/auth/vkontakte");
+            const res = await fetch("/auth/vkontakte", {
+                mode: "no-cors"
+            });
             const data = await res.json();
             console.log(data);
         } catch (e) {

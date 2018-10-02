@@ -1,19 +1,20 @@
 import {Strategy} from "passport-local";
-import Sequelize from "sequelize";
-import {UserAttributes, UserInstance} from "../../db/models/User";
-import {DataBase} from "../../db";
-import  {PassportStatic} from "passport";
-import {Authentication} from "../index";
+import {PassportStatic} from "passport";
+import {Authentication, SocialData} from "../index";
 
 export class LocalAuthentication extends Authentication {
 
+    static PROVIDER:string = "local";
     _logIn: Strategy;
     _signUp: Strategy;
     _strategyLogInName: string;
     _strategySignUpName: string;
+    _socialData?: SocialData;
 
 
-    constructor(logIn: Strategy, signUp: Strategy, strategyLogInName: string, strategySignUpName: string,) {
+
+    constructor(logIn: Strategy, signUp: Strategy, strategyLogInName: string,
+                strategySignUpName: string) {
         super();
         this._logIn = logIn;
         this._signUp = signUp;
@@ -21,26 +22,6 @@ export class LocalAuthentication extends Authentication {
         this._strategySignUpName = strategySignUpName;
         this.passport.use(this.strategyLogInName, this.logIn);
         this.passport.use(this.strategySignUpName, this.signUp);
-    }
-
-    public setUserCookie(model: Sequelize.Model<UserInstance, UserAttributes>, db: DataBase): void {
-        this.passport.serializeUser(
-            (user: UserInstance, done: Function) => {
-                done(null, user.username)
-            }
-        );
-        this.passport.deserializeUser(
-            async (username: string, done: Function) => {
-                try {
-                    const entry = await db.getEntryByUsername(username, model);
-                    if (entry) {
-                        return done(null, entry);
-                    }
-                } catch (error) {
-                    return done(null, false);
-                }
-            }
-        );
     }
 
     get logIn(): Strategy {

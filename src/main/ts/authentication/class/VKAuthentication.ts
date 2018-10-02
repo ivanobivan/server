@@ -1,15 +1,19 @@
 import {Strategy} from "passport-vkontakte";
-import {Authentication} from "../index";
+import {Authentication, SocialData} from "../index";
 import {PassportStatic} from "passport";
 
-export class VKAuthentication extends Authentication{
+export class VKAuthentication extends Authentication {
+
+    static PROVIDER:string = "vk";
     _logIn: Strategy;
     _signUp?: Strategy;
     _strategyLogInName: string;
     _strategySignUpName?: string;
 
-
-    constructor(logIn: Strategy, strategyLogInName: string) {
+    constructor(
+        logIn: Strategy,
+        strategyLogInName: string
+    ) {
         super();
         this._logIn = logIn;
         this._strategyLogInName = strategyLogInName;
@@ -39,4 +43,5 @@ export class VKAuthentication extends Authentication{
     set passport(value: PassportStatic) {
         super.passport = value;
     }
+
 }
