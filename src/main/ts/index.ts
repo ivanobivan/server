@@ -30,8 +30,8 @@ class Server {
             })
         );
         const wrapper = new AppWrapper();
-        this.app.use(wrapper.localAuthentication.passport.initialize());
-        this.app.use(wrapper.localAuthentication.passport.session());
+        this.app.use(wrapper.auth.passport.initialize());
+        this.app.use(wrapper.auth.passport.session());
         this.app.enable("view cache");
         this.app.set('view engine', 'ejs');
         this.app.use("/api", wrapper.apiRouter);

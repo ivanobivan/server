@@ -18,6 +18,7 @@ export class AppWrapper {
     private _AuthenticationMap: Map<string, Authentication>;
     private _apiRouter: Router;
     private _authRouter: Router;
+    private _auth:Authentication;
 
     constructor() {
         this._DBEntries = new Map();
@@ -26,17 +27,20 @@ export class AppWrapper {
         const userEntry = UserModel(this._db.sequelize);
         this._DBEntries.set(User.ENTRY_NAME, userEntry);
         this.syncAllDBEntries();
+
         const localAuthentication = new LocalAuthentication(
             localLogIn(userEntry, this.db),
             localSignUp(userEntry, this.db),
             "localAuthentication-logIn",
             "localAuthentication-signUp",
         );
+
         const vkSocialData = new VKSocialData(
             "",
             "",
             "",
         );
+
         const vkAuthentication = new VKAuthentication(
             vkLogin(userEntry, this.db, vkSocialData, VKAuthentication.PROVIDER),
             "vkAuthentication-logIn",
@@ -49,7 +53,8 @@ export class AppWrapper {
             VKAuthentication.PROVIDER,
             vkAuthentication
         );
-        localAuthentication.setUserCookie(userEntry, this.db);
+        this._auth = <Authentication>localAuthentication;
+        this._auth.setUserCookie(userEntry, this.db);
         this._apiRouter = Router();
         this._authRouter = Router();
         this.hangApiRoutes();
@@ -96,6 +101,15 @@ export class AppWrapper {
 
     set authRouter(value: Router) {
         this._authRouter = value;
+    }
+
+
+    get auth(): Authentication {
+        return this._auth;
+    }
+
+    set auth(value: Authentication) {
+        this._auth = value;
     }
 
     public syncAllDBEntries(): void {
@@ -184,7 +198,7 @@ export class AppWrapper {
     hangAuthRoutes(): void {
         this.authRouter.post('/signUp', async (req: Request, res: Response) => {
             try {
-                const localAuthentication:LocalAuthentication | undefined = this.getAuthenticationModel(LocalAuthentication.PROVIDER);
+                const localAuthentication = <LocalAuthentication>this.getAuthenticationModel(LocalAuthentication.PROVIDER);
                 if (req.isUnauthenticated() && localAuthentication) {
                     return await localAuthentication.passport.authenticate(
                         localAuthentication.strategySignUpName,
@@ -210,9 +224,10 @@ export class AppWrapper {
 
         this.authRouter.post('/logIn', async (req: Request, res: Response) => {
             try {
-                if (req.isUnauthenticated()) {
-                    return await this.localAuthentication.passport.authenticate(
-                        this.localAuthentication.strategyLogInName,
+                const localAuthentication = <LocalAuthentication>this.getAuthenticationModel(LocalAuthentication.PROVIDER);
+                if (req.isUnauthenticated() && localAuthentication) {
+                    return await localAuthentication.passport.authenticate(
+                        localAuthentication.strategyLogInName,
                         (e: Error, user: User) => {
                             if (e) {
                                 throw e;
@@ -234,12 +249,12 @@ export class AppWrapper {
 
         this.authRouter.get("/vkontakte", async (req: Request, res: Response, next: NextFunction) => {
             try {
-                console.log("ONE");
-                console.log(req.user);
-                return await this.vkAuthentication.passport.authenticate(
-                    this.vkAuthentication.strategyLogInName
-                )(req, res, next);
-
+                const vkAuthentication = <VKAuthentication>this.getAuthenticationModel(VKAuthentication.PROVIDER);
+                if (vkAuthentication) {
+                    return await vkAuthentication.passport.authenticate(
+                        vkAuthentication.strategyLogInName
+                    )(req, res, next);
+                }
             } catch (e) {
                 return res.status(500).send(e);
             }
@@ -247,15 +262,16 @@ export class AppWrapper {
 
         this.authRouter.get("/vkontakte/callback", async (req: Request, res: Response, next: NextFunction) => {
             try {
-                console.log("TWO");
-                return await this.vkAuthentication.passport.authenticate(
-                    this.vkAuthentication.strategyLogInName,
-                    {
-                        successRedirect: '/api/home',
-                        failureRedirect: '/api/fail'
-                    }
-                )(req, res, next);
-
+                const vkAuthentication = <VKAuthentication>this.getAuthenticationModel(VKAuthentication.PROVIDER);
+                if (vkAuthentication) {
+                    return await vkAuthentication.passport.authenticate(
+                        vkAuthentication.strategyLogInName,
+                        {
+                            successRedirect: '/api/home',
+                            failureRedirect: '/api/fail'
+                        }
+                    )(req, res, next);
+                }
             } catch (e) {
                 return res.status(500).send(e);
             }
