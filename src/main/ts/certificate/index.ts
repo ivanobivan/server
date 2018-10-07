@@ -10,7 +10,8 @@ export class Certificate implements tls.SecureContextOptions {
     constructor(
         key: Buffer,
         cert: Buffer,
-        requestCert?: boolean, rejectUnauthorized?: boolean
+        requestCert?: boolean,
+        rejectUnauthorized?: boolean
     ) {
         this.key = key;
         this.cert = cert;

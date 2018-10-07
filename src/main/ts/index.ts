@@ -18,7 +18,9 @@ class Server {
     constructor() {
         this.certificate = new Certificate(
             fs.readFileSync(path.resolve('src/main/ts/certificate/files/server.key')),
-            fs.readFileSync(path.resolve('src/main/ts/certificate/files/server.crt'))
+            fs.readFileSync(path.resolve('src/main/ts/certificate/files/server.crt')),
+            false,
+            false
         );
         this.app = express();
         this.app.use(bodyParser.urlencoded({extended: false}));

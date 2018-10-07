@@ -33,7 +33,10 @@ export default class Form extends React.Component<FormPropsInterface, FormStateI
 
     getData = async (): Promise<void> => {
         try {
-            const res = await fetch("/api/getAll");
+            const res = await fetch("/api/getAll",{
+                headers:{
+                }
+            });
             const data: Array<User> = await res.json();
             this.setState({
                 data: data,
