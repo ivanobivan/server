@@ -3,14 +3,23 @@ import cookieParser from "cookie-parser";
 import express, {Express, Request, Response} from "express";
 import cookieSession from "cookie-session";
 import {ServerConfig} from "./config/config";
-import {AppWrapper} from "./routers"
+import {AppWrapper} from "./routers";
+import fs from "fs";
+import path from "path";
+import https from "https";
+import {Certificate} from "./certificate";
 
 //todo logger morgan
 //todo realize problem with Sequalize.{anyone}, rename
 class Server {
     private app: Express;
+    private certificate: Certificate;
 
     constructor() {
+        this.certificate = new Certificate(
+            fs.readFileSync(path.resolve('src/main/ts/certificate/files/server.key')),
+            fs.readFileSync(path.resolve('src/main/ts/certificate/files/server.crt'))
+        );
         this.app = express();
         this.app.use(bodyParser.urlencoded({extended: false}));
         this.app.use(cookieParser());
@@ -40,9 +49,12 @@ class Server {
 
 
     start(): void {
-        this.app.listen(ServerConfig.PORT, ServerConfig.HOST, () => {
-            console.log(`listen ${ServerConfig.PORT}`)
-        })
+        https.createServer(this.certificate, this.app).listen(
+            ServerConfig.PORT,
+            ServerConfig.HOST,
+            () => {
+            console.log("server started")
+        });
     };
 }
 

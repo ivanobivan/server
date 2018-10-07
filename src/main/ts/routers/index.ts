@@ -130,6 +130,8 @@ export class AppWrapper {
 
     public hangApiRoutes(): void {
 
+
+        //todo /home /fail subsidiary routes without redirect, only json
         this.apiRouter.get("/home", (req: Request, res: Response) => {
             return res.status(200).json({message: "YAP"})
         });
@@ -215,7 +217,6 @@ export class AppWrapper {
                         }
                     )(req, res);
                 }
-
                 return await res.status(400);
             } catch (e) {
                 return res.sendStatus(400).send(e);

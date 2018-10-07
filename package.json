@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start:server": "ts-node-dev --inspect --respawn src/main/ts/index.ts",
+    "start:server-debug": "ts-node-dev --inspect --respawn src/main/ts/index.ts",
+    "start:server": "ts-node src/main/ts/index.ts",
     "start:frontend": "webpack-dev-server  --mode development",
     "build:frontend": "webpack --mode development",
     "test": "echo \"Error: no test specified\" && exit 1"
