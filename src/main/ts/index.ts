@@ -2,7 +2,7 @@ import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 import express, {Express, Request, Response} from "express";
 import cookieSession from "cookie-session";
-import {ServerConfig} from "./config/config";
+import {ServerConfig} from "./config";
 import {AppWrapper} from "./routers";
 import fs from "fs";
 import path from "path";

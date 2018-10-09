@@ -10,6 +10,7 @@ import {LocalAuthentication} from "../authentication/class/LocalAuthentication";
 import {VKAuthentication} from "../authentication/class/VKAuthentication";
 import {VKSocialData} from "../authentication/social/VKSocialData";
 import {Authentication} from "../authentication";
+import {VKPrivateConfig} from "../config/private";
 
 
 export class AppWrapper {
@@ -18,7 +19,7 @@ export class AppWrapper {
     private _AuthenticationMap: Map<string, Authentication>;
     private _apiRouter: Router;
     private _authRouter: Router;
-    private _auth:Authentication;
+    private _auth: Authentication;
 
     constructor() {
         this._DBEntries = new Map();
@@ -36,9 +37,9 @@ export class AppWrapper {
         );
 
         const vkSocialData = new VKSocialData(
-            "6707819",
-            "Y5PQ3AMSoxOwzyzOE3Z9",
-            "http://0.0.0.0:8080/auth/vkontakte/callback",
+            VKPrivateConfig.CLIENT_ID,
+            VKPrivateConfig.CLIENT_SECRET,
+            VKPrivateConfig.CALLBACK_URL,
         );
 
         const vkAuthentication = new VKAuthentication(

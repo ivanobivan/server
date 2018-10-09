@@ -1,5 +1,5 @@
 import Sequelize, {and, col, FindOptions, fn, or, Transaction, where, WhereOptions} from "sequelize";
-import {DBConfig} from "../config/config";
+import {DBConfig} from "../config";
 import {UserAttributes, UserInstance} from "./models/User";
 
 
