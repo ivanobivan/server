@@ -8,7 +8,9 @@
     "start:server": "ts-node src/main/ts/index.ts",
     "start:frontend": "webpack-dev-server  --mode development",
     "build:frontend": "webpack --mode development",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "tslint",
+    "lint:fix": "tslint --fix"
   },
   "author": "",
   "license": "ISC",
@@ -20,7 +22,7 @@
     "react-dom": "^16.5.0"
   },
   "devDependencies": {
-    "@types/axios": "^0.14.0",
+    "tslint-react-recommended": "^1.0.15"
     "@types/bcrypt-nodejs": "0.0.30",
     "@types/cookie-parser": "^1.4.1",
     "@types/cookie-session": "^2.0.36",
