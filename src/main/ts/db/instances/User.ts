@@ -18,7 +18,7 @@ export class User implements UserAttributes {
         socialId?: number,
         email?: string,
     ) {
-        this.username = username;
+        this.username = username;1
         this.password = password;
         this.provider = provider;
         this.socialId = socialId;

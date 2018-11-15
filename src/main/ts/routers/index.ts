@@ -19,6 +19,7 @@ export class AppWrapper {
     private _AuthenticationMap: Map<string, Authentication>;
     private _apiRouter: Router;
     private _authRouter: Router;
+    private _innerRouter: Router;
     private _auth: Authentication;
 
     constructor() {
@@ -58,8 +59,10 @@ export class AppWrapper {
         this._auth.setUserCookie(userEntry, this.db);
         this._apiRouter = Router();
         this._authRouter = Router();
+        this._innerRouter = Router();
         this.hangApiRoutes();
         this.hangAuthRoutes();
+        this.hangInnerRoutes();
     }
 
     get db(): DataBase {
@@ -105,6 +108,14 @@ export class AppWrapper {
     }
 
 
+    get innerRouter(): Router {
+        return this._innerRouter;
+    }
+
+    set innerRouter(value: Router) {
+        this._innerRouter = value;
+    }
+
     get auth(): Authentication {
         return this._auth;
     }
@@ -127,6 +138,12 @@ export class AppWrapper {
 
     public getAuthenticationModel(key: string): Authentication | undefined {
         return this.AuthenticationMap.get(key);
+    }
+
+    public hangInnerRoutes():void{
+        this.innerRouter.post("/checkCaptcha", (req: Request, res: Response) => {
+            return res.status(200).json({message: "YAP"})
+        });
     }
 
     public hangApiRoutes(): void {

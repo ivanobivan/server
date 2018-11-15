@@ -22,7 +22,7 @@
     "react-dom": "^16.5.0"
   },
   "devDependencies": {
-    "tslint-react-recommended": "^1.0.15"
+    "tslint-react-recommended": "^1.0.15",
     "@types/bcrypt-nodejs": "0.0.30",
     "@types/cookie-parser": "^1.4.1",
     "@types/cookie-session": "^2.0.36",

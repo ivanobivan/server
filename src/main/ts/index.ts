@@ -13,15 +13,16 @@ import {Certificate} from "./certificate";
 //todo realize problem with Sequalize.{anyone}, rename
 class Server {
     private app: Express;
-    private certificate: Certificate;
+
+    //private certificate: Certificate;
 
     constructor() {
-        this.certificate = new Certificate(
+        /*this.certificate = new Certificate(
             fs.readFileSync(path.resolve('src/main/ts/certificate/files/server.key')),
             fs.readFileSync(path.resolve('src/main/ts/certificate/files/server.crt')),
             false,
             false
-        );
+        );*/
         this.app = express();
         this.app.use(bodyParser.urlencoded({extended: false}));
         this.app.use(cookieParser());
@@ -43,20 +44,25 @@ class Server {
         const wrapper = new AppWrapper();
         this.app.use(wrapper.auth.passport.initialize());
         this.app.use(wrapper.auth.passport.session());
+        this.app.use(express.static('public'));
         this.app.enable("view cache");
         this.app.set('view engine', 'ejs');
         this.app.use("/api", wrapper.apiRouter);
         this.app.use("/auth", wrapper.authRouter);
+        this.app.use("/login/inner", wrapper.innerRouter);
     }
 
 
     start(): void {
-        https.createServer(this.certificate, this.app).listen(
+        this.app.listen(ServerConfig.PORT, ServerConfig.HOST, () => {
+            console.log(`listen ${ServerConfig.PORT}`)
+        });
+        /*https.createServer(this.certificate, this.app).listen(
             ServerConfig.PORT,
             ServerConfig.HOST,
             () => {
             console.log("server started")
-        });
+        });*/
     };
 }
 
