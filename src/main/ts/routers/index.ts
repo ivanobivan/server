@@ -140,8 +140,12 @@ export class AppWrapper {
         return this.AuthenticationMap.get(key);
     }
 
-    public hangInnerRoutes():void{
+    public hangInnerRoutes():void {
         this.innerRouter.post("/checkCaptcha", (req: Request, res: Response) => {
+            return res.status(200).json(req.body)
+        });
+
+        this.innerRouter.post("/refreshCaptcha", (req: Request, res: Response) => {
             return res.status(200).json({message: "YAP"})
         });
     }
