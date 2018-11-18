@@ -140,9 +140,19 @@ export class AppWrapper {
         return this.AuthenticationMap.get(key);
     }
 
-    public hangInnerRoutes():void {
+    public hangInnerRoutes(): void {
         this.innerRouter.post("/checkCaptcha", (req: Request, res: Response) => {
-            return res.status(200).json(req.body)
+            if (req.body.captcha === "123") {
+                if (req.body.type === "certificate") {
+                    res.sendStatus(400);
+                } else if (req.body.type === "other") {
+                    res.sendStatus(400);
+                } else if (req.body.type === "myself") {
+                    return res.status(200).json(req.body);
+                }
+                res.sendStatus(400);
+            }
+            return  res.sendStatus(400);
         });
 
         this.innerRouter.post("/refreshCaptcha", (req: Request, res: Response) => {
